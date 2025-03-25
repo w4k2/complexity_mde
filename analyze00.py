@@ -9,23 +9,24 @@ from tabulate import tabulate
 import matplotlib
 matplotlib.rcParams.update({'font.size': 22, "font.family" : "monospace"})
 
-
+n_data = 14
 data = Data(selection=("all", ["balanced", "binary"]), path="datasets/")
 datasets = data.load()
-datasets = list(datasets.keys())
+datasets = list(datasets.keys())[:n_data]
 encodings = ["STML", "STML_RGB", "XGB"]
 
 scores_stml = np.load("results/ex00_preliminary_stml_transfer_224_scores.npy")
+scores_stml_rgb = np.load("results/ex00_preliminary_stml_rgb_transfer_224_scores.npy")
 scores_xgb = np.load("results/xgb_scores.npy")
 
 # ENCODING x DATASETS x FOLDS x EPOCHS
-gathered = np.stack((scores_stml, scores_stml))
+gathered = np.stack((scores_stml, scores_stml_rgb))
 ttest_data = gathered[:, :, :, -1]
 ttest_data = np.concatenate((ttest_data, scores_xgb.reshape(1, 22, 10)), axis=0)
 
 # ENCODING x DATASETS
 gathered = np.mean(gathered, axis=2)[:, :, -1]
-gathered = np.concatenate((gathered, np.mean(scores_xgb, axis=1).reshape(1, 22)), axis=0)
+gathered = np.concatenate((gathered, np.mean(scores_xgb, axis=1).reshape(1, 22)), axis=0)[:, :n_data]
 
 # DATASETS x ENCODING
 gathered = gathered.T
@@ -39,14 +40,19 @@ width = 0.16  # the width of the bars
 multiplier = -1
 
 fig, ax = plt.subplots(1, 1, figsize=(18, 10))
-colors = ["lightsteelblue", "moccasin", "darkseagreen", "tomato", "lightgrey"]
-# colors = ["#7CB6F0", "#EEA529", "#6EB782", "tomato", "lightgrey"]
+# colors = ["lightsteelblue", "moccasin", "darkseagreen", "tomato", "lightgrey"]
+colors = ["lightsteelblue", "tomato", "lightgrey"]
 
 for encoding_id, encoding in enumerate(encodings):
     offset = width * multiplier
+    # if "RGB" in encoding:
+    #     rects = ax.bar(x + offset, gathered[:, encoding_id], width, label=encoding
+    #                , color=colors[encoding_id], edgecolor="tomato"
+    #                )
+    # else:
     rects = ax.bar(x + offset, gathered[:, encoding_id], width, label=encoding
-                   , color=colors[encoding_id]
-                   )
+                , color=colors[encoding_id]
+                )
     # ax.bar_label(rects, padding=3)
     multiplier += 1
 

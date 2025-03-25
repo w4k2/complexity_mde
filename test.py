@@ -1,6 +1,6 @@
 from sklearn.datasets import make_classification
 import numpy as np
-from mde import STML, STML_RGB
+from mde import STML, STML_RGB, STML_RGB2
 import matplotlib.pyplot as plt
 
 
@@ -11,7 +11,7 @@ print(X[0])
 stml = STML()
 X_stml = stml.fit_transform(X)
 
-stml_rgb = STML_RGB()
+stml_rgb = STML_RGB2()
 X_stml_rgb = stml_rgb.fit_transform(X, y)
 
 fig, ax = plt.subplots(1, 2, figsize=(20, 10))

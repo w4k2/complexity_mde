@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 num_epochs = 20
 
 
-data = Data(selection=("all", ["balanced", "binary"]), path="datasets/")
+data = Data(selection=["breastcancoimbra"], path="datasets/")
 datasets = data.load()
 
 # Scores
@@ -50,6 +50,10 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
         # Train
         stml_rgb = STML_RGB2()
         X_encoded_train = stml_rgb.fit_transform(X[train_index], y[train_index])
+
+        # stml_rgb = STML()
+        # X_encoded_train = stml_rgb.fit_transform(X[train_index])
+
         X_encoded_train = torch.from_numpy(np.moveaxis(X_encoded_train, 3, 1)).float()
         y_train = torch.from_numpy(y[train_index]).long()
         
@@ -104,4 +108,4 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
             
             scores[data_id, fold_id, epoch] = balanced_accuracy_score(y_test, preds)
             
-        np.save("results/ex00_preliminary_stml_rgb_transfer_224_scores", scores)
+        np.save("results/ex00_breastcancoimbra_epochs_stml_rgb", scores)
