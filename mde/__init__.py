@@ -1,5 +1,5 @@
 from .stml import STML
-from .stml_rgb import STML_RGB, STML_RGB2
+from .igtd import IGTD_npy, min_max_transform, table_to_image_array
+from .di import ImageTransformer as DeepInsight, Norm2Scaler
 
-
-__all__ = ["SMTL", "STML_RGB", "STML_RGB2"]
+__all__ = ["STML", "IGTD_npy", "min_max_transform", "table_to_image_array", "DeepInsight", "Norm2Scaler"]
