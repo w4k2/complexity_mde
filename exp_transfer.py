@@ -16,16 +16,17 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision.models.feature_extraction import create_feature_extractor, get_graph_node_names
 # Sources
-from mde import STML
+from mde import STML, DeepInsight, Norm2Scaler
 from utils import Data
 
 
 # ['australian', 'banknote', 'breastcan', 'breastcancoimbra', 'bupa', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
+# ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 
-data = Data(selection=("all", ["balanced", "binary"]), path="datasets/")
+data = Data(selection=['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin'], path="datasets/")
 datasets = data.load()
 
-transfer_names = ['australian', 'banknote', 'breastcan', 'breastcancoimbra', 'bupa', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
+transfer_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 transfer_names = ["imagenet"] + transfer_names
 
 # Scores
@@ -42,7 +43,7 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
     for fold_id, (train_index, test_index) in enumerate(tqdm(rskf.split(X, y), leave=False, desc=f"{data_id}", total=10)):
         # Encoding        
         # Train
-        stml = STML()
+        # stml = STML()
 
         # pca = PCA(n_components=4, random_state=1410)
         # X_train = pca.fit_transform(X[train_index])
@@ -51,11 +52,17 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
         X_train = X[train_index]
         X_test = X[test_index]
 
-        X_encoded_train = stml.fit_transform((X_train))
+        ln = Norm2Scaler()
+        di = DeepInsight(feature_extractor='pca', 
+        discretization='bin', pixels=(224, 224))
+
+        X_train = ln.fit_transform(X_train)
+        X_encoded_train = di.fit_transform((X_train))
         X_encoded_train = torch.from_numpy(np.moveaxis(X_encoded_train, 3, 1)).float()
         y_train = torch.from_numpy(y[train_index]).long()
         
-        X_encoded_test = stml.transform((X_test))
+        X_test = ln.transform(X_test)
+        X_encoded_test = di.transform((X_test))
         X_encoded_test = torch.from_numpy(np.moveaxis(X_encoded_test, 3, 1)).float()
         y_test = torch.from_numpy(y[test_index]).long()
         
@@ -65,9 +72,11 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
             batch_size = 8
 
             if transfer == "imagenet":
-                model = resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+                # model = resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+                model = resnet18(weights=None)
             else:
-                model = torch.load("models/model_%s_imgn.pt" % transfer, weights_only=False)
+                # model = torch.load("models/model_%s_di.pt" % transfer, weights_only=False)
+                model = torch.load("models/model_%s_di_wo_imgnet.pt" % transfer, weights_only=False)
 
             for param in model.parameters():
                 param.requires_grad = False
@@ -124,6 +133,7 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
             
             transrates[data_id, fold_id, transfer_id] = transrate(X_extracted, y_test)
             
-                
-            np.save("results/transfer/prelim_bac_full", scores)
-            np.save("results/transfer/prelim_transrates_full", transrates)
+            # np.save("results/transfer/di_bac_full", scores)
+            # np.save("results/transfer/di_transrates_full", transrates)
+            np.save("results/transfer/di_bac_full_wo_imgnet", scores)
+            np.save("results/transfer/di_transrates_full_wo_imgnet", transrates)

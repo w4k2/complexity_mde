@@ -6,36 +6,27 @@ matplotlib.rcParams.update({'font.size': 18, "font.family" : "monospace"})
 
 # dataset_names = ['australian', 'banknote', 'breastcan', 'breastcancoimbra', 'bupa', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 # Remove breastcan and bupa (2, 4)
-# dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
-dataset_names = ['australian', "banknote"]
+dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
+# dataset_names = ['australian', "banknote"]
 # transfer_names = ["imagenet"] + dataset_names + ["synth"]
-transfer_names = ["imagenet"] + ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin'] + ["foundational"]
+transfer_names = ["imagenet"] + ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 
 # DATASET x FOLDS x TRANSFER
-scores = np.load("results/transfer/prelim_bac_full.npy")
-transrates = np.load("results/transfer/prelim_transrates_full.npy")
+scores = np.load("results/transfer/di_bac_full.npy")
+transrates = np.load("results/transfer/di_transrates_full.npy")
+# scores = np.load("results/transfer/di_bac_full_wo_imgnet.npy")
+# transrates = np.load("results/transfer/di_transrates_full_wo_imgnet.npy")
 
-# Remove breastcan and bupa (2, 4)
+# # Remove breastcan and bupa (2, 4)
 del_datasets = list(np.delete(np.arange(scores.shape[0]), [2, 4]))
 del_transfer = list(np.delete(np.arange(scores.shape[2]), [3, 5]))
 scores = scores[del_datasets]
-scores = scores[:, :, del_transfer]
 transrates = transrates[del_datasets]
-transrates = transrates[:, :, del_transfer]
-
-scores = scores[:2]
-transrates = transrates[:2]
-
-# Append SYNTH / FOUNDATIONAL
-synth_scores = np.load("results/transfer/foundational_test_scores.npy")
-synth_transrates= np.load("results/transfer/foundational_test_transrates.npy")
-
-scores = np.concatenate((scores, synth_scores), axis=2)
-transrates = np.concatenate((transrates, synth_transrates), axis=2)
 
 # Calculate mean across folds
 mean_scores = np.mean(scores, axis=1)
 mean_transrates = np.mean(transrates, axis=1)
+
 
 """
 Heatmaps for TransRate and BAC
@@ -91,5 +82,5 @@ for data_id, data_name in enumerate(dataset_names):
     # plt.legend(frameon=True, fontsize=12, ncols=2)
 
     plt.tight_layout()
-    plt.savefig("figures/transfer/%s" % data_name, dpi=200)
+    plt.savefig("figures/transfer/di_%s" % data_name, dpi=200)
     plt.close()

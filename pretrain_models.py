@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 # Sources
-from mde import STML
+from mde import STML, DeepInsight, Norm2Scaler
 from utils import Data
 from sklearn.decomposition import PCA
 from sklearn.datasets import make_classification
@@ -21,17 +21,21 @@ data = Data(selection=['australian', 'banknote', 'breastcancoimbra', 'cryotherap
 datasets = data.load()
 
 for data_id, dataset_name in enumerate(tqdm(datasets)):
-    X_, y_ = datasets[dataset_name][0], datasets[dataset_name][1]
+    X, y = datasets[dataset_name][0], datasets[dataset_name][1]
 
-    X, y = make_classification(n_samples=2000, n_features=X_.shape[1], n_informative=X_.shape[1], n_redundant=0, n_repeated=0, random_state=1410)
+    # X, y = make_classification(n_samples=2000, n_features=X_.shape[1], n_informative=X_.shape[1], n_redundant=0, n_repeated=0, random_state=1410)
 
     # pca = PCA(n_components=4, random_state=1410)
     # X = pca.fit_transform(X)
         
-    # Encoding        
-    stml = STML()
+    # Encoding
+    # stml = STML()
+    ln = Norm2Scaler()
+    di = DeepInsight(feature_extractor='pca', 
+    discretization='bin', pixels=(224, 224))
 
-    X_encoded = stml.fit_transform((X))
+    X_encoded = ln.fit_transform(X)
+    X_encoded = di.fit_transform((X_encoded))
     X_encoded = torch.from_numpy(np.moveaxis(X_encoded, 3, 1)).float()
     y = torch.from_numpy(y).long()
     
@@ -39,7 +43,8 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
     num_classes = 2
     batch_size = 8
     # weights = None
-    weights = ResNet18_Weights.IMAGENET1K_V1
+    # weights = ResNet18_Weights.IMAGENET1K_V1
+    weights = None
     
     model = resnet18(weights=weights)
     num_ftrs = model.fc.in_features
@@ -68,4 +73,4 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
             loss.backward()
             optimizer.step()
 
-    torch.save(model, "models/model_%s_synth.pt" % dataset_name)
+    torch.save(model, "models/model_%s_di_wo_imgnet.pt" % dataset_name)
