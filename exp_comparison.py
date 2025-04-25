@@ -112,8 +112,8 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
                         model = torch.load("models/model_%s_di.pt" % transfer, weights_only=False)
 
                     # Extraction or Fine-tuning
-                    for param in model.parameters():
-                        param.requires_grad = False
+                    # for param in model.parameters():
+                    #     param.requires_grad = False
 
                     num_ftrs = model.fc.in_features
                     model.fc = nn.Linear(num_ftrs, num_classes)
@@ -160,4 +160,5 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
                         
                         results[data_id, fold_id, transfer_id, epoch] = balanced_accuracy_score(y_test, preds)
 
-                    np.save("results/transfer/comparison_imgnet_extraction", results)
+                    # np.save("results/transfer/comparison_imgnet_extraction", results)
+                    np.save("results/transfer/comparison_imgnet_finetuning", results)
