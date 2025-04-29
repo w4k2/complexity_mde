@@ -27,6 +27,54 @@ transrates = transrates[del_datasets]
 mean_scores = np.mean(scores, axis=1)
 mean_transrates = np.mean(transrates, axis=1)
 
+"""
+mean scatter plot
+"""
+# Calculate mean withou bac and transfer for the same dataset
+mean_plot_scores = []
+mean_plot_transrates = []
+
+all_idx = np.arange(0, 20, 1)
+
+for i in range(len(transfer_names)):
+    if i == 0:
+        _ = np.mean(mean_scores[:, i])
+        mean_plot_scores.append(_)
+        _ = np.mean(mean_transrates[:, i])
+        mean_plot_transrates.append(_)
+    else:
+        calc_idx = np.delete(all_idx, i-1)
+        _ = np.mean(mean_scores[calc_idx, i])
+        mean_plot_scores.append(_)
+        _ = np.mean(mean_transrates[calc_idx, i])
+        mean_plot_transrates.append(_)
+
+mean_plot_scores = np.array(mean_plot_scores)
+mean_plot_transrates = np.array(mean_plot_transrates)
+
+fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+cmap = matplotlib.colormaps['tab20c']
+colors = [cmap(i) for i in np.linspace(0, 1, len(transfer_names))]
+
+for transfer_id in range(len(transfer_names)):
+    ax.scatter(mean_plot_scores[transfer_id], mean_plot_transrates[transfer_id], color=colors[transfer_id])
+    ax.text(mean_plot_scores[transfer_id]+.0005, mean_plot_transrates[transfer_id]-.005, s=transfer_names[transfer_id], fontsize=8)
+
+ax.set_title("Mean plot over all transfer datasets")
+ax.set_xlabel("BAC")
+ax.set_ylabel("TransRate")
+# ax.set_xticks(np.arange(.55, .63, .01))
+# ax.set_yticks(np.arange(-.8, 1, .1))
+# ax.set_xlim((.55, .61))
+# ax.set_ylim((-.8, .9))
+ax.grid(ls=":", c=(.7, .7, .7))
+# plt.legend(frameon=True, fontsize=12, ncols=2)
+
+plt.tight_layout()
+plt.savefig("figures/transfer/full.png", dpi=200)
+plt.close()
+exit()
+
 
 """
 Heatmaps for TransRate and BAC
