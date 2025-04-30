@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.rcParams.update({'font.size': 18, "font.family" : "monospace"})
+matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
 
 
 # dataset_names = ['australian', 'banknote', 'breastcan', 'breastcancoimbra', 'bupa', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
@@ -71,7 +71,7 @@ ax.grid(ls=":", c=(.7, .7, .7))
 # plt.legend(frameon=True, fontsize=12, ncols=2)
 
 plt.tight_layout()
-plt.savefig("figures/transfer/full.png", dpi=200)
+plt.savefig("figures/transfer/all_transfer.png", dpi=200)
 plt.close()
 exit()
 
