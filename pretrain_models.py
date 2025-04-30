@@ -15,10 +15,9 @@ from sklearn.datasets import make_classification
 
 n_epochs = 20
 """
-Pretrain GPT
+Pretrain Synth
 """
-data = np.genfromtxt('gpt_data/gpt_dataset.csv', delimiter=',', skip_header=1)
-X, y = data[:, :-1].astype(float), data[:, -1].astype(int)
+X, y = make_classification(n_samples=300, n_features=100, n_informative=10, n_redundant=0, n_repeated=0, n_clusters_per_class=14, class_sep=0.06, hypercube=True, random_state=1410)
 
 ln = Norm2Scaler()
 di = DeepInsight(feature_extractor='pca', 
@@ -63,7 +62,7 @@ for epoch in tqdm(range(n_epochs), leave=False):
         loss.backward()
         optimizer.step()
 
-torch.save(model, "models/model_gpt_di_imgnet.pt")
+torch.save(model, "models/model_synth2716_di_imgnet.pt")
 
 exit()
 """

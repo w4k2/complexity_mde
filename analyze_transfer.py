@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+import problexity as px
+from sklearn.feature_selection import SelectKBest, f_regression
 matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
 
 
@@ -9,7 +11,8 @@ matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
 dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 # dataset_names = ['australian', "banknote"]
 # transfer_names = ["imagenet"] + dataset_names + ["synth"]
-transfer_names = ["imagenet"] + ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
+transfer_names = ["imagenet"] + ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin'] 
+# + ["gpt"]
 
 # DATASET x FOLDS x TRANSFER
 scores = np.load("results/transfer/di_bac_full.npy")
@@ -23,10 +26,23 @@ del_transfer = list(np.delete(np.arange(scores.shape[2]), [3, 5]))
 scores = scores[del_datasets]
 transrates = transrates[del_datasets]
 
+"""
+Add GPT
+"""
+gpt_scores = np.load("results/transfer/di_bac_synth2716_imgnet.npy")
+gpt_transrates = np.load("results/transfer/di_transrates_synth2716_imgnet.npy")
+
+# scores = np.concatenate((scores, gpt_scores), axis=2)
+# transrates = np.concatenate((transrates, gpt_transrates), axis=2)
+
+print(scores.shape)
+print(transrates.shape)
+print(gpt_scores.shape)
+print(gpt_transrates.shape)
+
 # Calculate mean across folds
 mean_scores = np.mean(scores, axis=1)
 mean_transrates = np.mean(transrates, axis=1)
-
 """
 mean scatter plot
 """
@@ -37,7 +53,7 @@ mean_plot_transrates = []
 all_idx = np.arange(0, 20, 1)
 
 for i in range(len(transfer_names)):
-    if i == 0:
+    if i == 0 or i == 1:
         _ = np.mean(mean_scores[:, i])
         mean_plot_scores.append(_)
         _ = np.mean(mean_transrates[:, i])
@@ -52,6 +68,41 @@ for i in range(len(transfer_names)):
 mean_plot_scores = np.array(mean_plot_scores)
 mean_plot_transrates = np.array(mean_plot_transrates)
 
+# Complexity x BAC plot
+complexity = np.load("results/complexity_measures.npy")
+
+# Best metrics for trasnferability estimation
+cc = px.ComplexityCalculator()
+metrics = cc._metrics()
+
+kbest = SelectKBest(f_regression)
+kbest.fit_transform(complexity, mean_plot_scores[1:])
+kbest_scores = kbest.scores_
+kbest_argmax = np.argsort(-kbest_scores)
+print(kbest_scores[kbest_argmax[-1:]])
+print(np.array(metrics)[kbest_argmax])
+
+# <eamcomplexity taking into account selected metrics
+# mean_complexity = np.mean(complexity[:, kbest_argmax[-1:]], axis=1)
+mean_complexity = np.mean(complexity[:, kbest_argmax[:1]], axis=1)
+
+fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+cmap = matplotlib.colormaps['tab20c']
+colors = [cmap(i) for i in np.linspace(0, 1, len(dataset_names)+1)]
+
+for data_id in range(len(dataset_names)):
+    ax.scatter(mean_plot_scores[data_id+1], mean_complexity[data_id], color=colors[data_id+1])
+    ax.text(mean_plot_scores[data_id+1], mean_complexity[data_id], s=dataset_names[data_id], fontsize=8)
+
+# ax.set_title("Mean plot over all transfer datasets")
+ax.set_xlabel("BAC")
+ax.set_ylabel("Mean complexity")
+ax.grid(ls=":", c=(.7, .7, .7))
+
+plt.tight_layout()
+plt.savefig("figures/all_bac_complexity.png", dpi=200)
+plt.close()
+
 fig, ax = plt.subplots(1, 1, figsize=(10, 10))
 cmap = matplotlib.colormaps['tab20c']
 colors = [cmap(i) for i in np.linspace(0, 1, len(transfer_names))]
@@ -59,6 +110,8 @@ colors = [cmap(i) for i in np.linspace(0, 1, len(transfer_names))]
 for transfer_id in range(len(transfer_names)):
     ax.scatter(mean_plot_scores[transfer_id], mean_plot_transrates[transfer_id], color=colors[transfer_id])
     ax.text(mean_plot_scores[transfer_id]+.0005, mean_plot_transrates[transfer_id]-.005, s=transfer_names[transfer_id], fontsize=8)
+
+ax.scatter(np.mean(gpt_scores, axis=(0, 1)), np.mean(gpt_transrates, axis=(0, 1)), color="tomato", s=80)
 
 ax.set_title("Mean plot over all transfer datasets")
 ax.set_xlabel("BAC")
@@ -73,8 +126,6 @@ ax.grid(ls=":", c=(.7, .7, .7))
 plt.tight_layout()
 plt.savefig("figures/transfer/all_transfer.png", dpi=200)
 plt.close()
-exit()
-
 
 """
 Heatmaps for TransRate and BAC
@@ -118,6 +169,8 @@ for data_id, data_name in enumerate(dataset_names):
         if transfer != data_name:
             ax.scatter(mean_scores[data_id][transfer_id], mean_transrates[data_id][transfer_id], label=transfer, color=colors[transfer_id])
             ax.text(mean_scores[data_id][transfer_id]+.001, mean_transrates[data_id][transfer_id]-.01, s=transfer, fontsize=8)
+
+    ax.scatter(np.mean(gpt_scores, axis=(1))[data_id], np.mean(gpt_transrates, axis=(1))[data_id], color="tomato", s=80)
 
     ax.set_title(data_name)
     ax.set_xlabel("BAC")
