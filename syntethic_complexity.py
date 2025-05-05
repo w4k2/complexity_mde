@@ -8,7 +8,7 @@ clusters = np.arange(1, 20, 1)
 class_seps = np.arange(0.01, 1, 0.05)
 hypercube = [True]
 
-best_n1 = 0
+best_n1 = 100
 for n_clusters in clusters:
     for sep in class_seps:
         for hyper in hypercube:
@@ -19,7 +19,7 @@ for n_clusters in clusters:
             cc = px.n1(X, y)
             # cc.fit()
             # complexity = cc.complexity
-            if cc > best_n1:
+            if cc < best_n1:
                 best_n1 = cc
                 print("Clusters: %i | Class_sep: %.3f | Hypercube: %s" % (n_clusters, sep, str(hyper)))
                 print(cc)

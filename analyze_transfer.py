@@ -16,22 +16,26 @@ transfer_names = ["imagenet"] + ['australian', 'banknote', 'breastcancoimbra', '
 # + ["gpt"]
 
 # DATASET x FOLDS x TRANSFER
-# scores = np.load("results/transfer/di_bac_full.npy")
-# transrates = np.load("results/transfer/di_transrates_full.npy")
-scores = np.load("results/transfer/di_bac_full_wo_imgnet.npy")
-transrates = np.load("results/transfer/di_transrates_full_wo_imgnet.npy")
+scores = np.load("results/transfer/di_bac_full.npy")
+transrates = np.load("results/transfer/di_transrates_full.npy")
+# scores = np.load("results/transfer/di_bac_full_wo_imgnet.npy")
+# transrates = np.load("results/transfer/di_transrates_full_wo_imgnet.npy")
 
 # # Remove breastcan and bupa (2, 4)
-# del_datasets = list(np.delete(np.arange(scores.shape[0]), [2, 4]))
-# del_transfer = list(np.delete(np.arange(scores.shape[2]), [3, 5]))
-# scores = scores[del_datasets]
-# transrates = transrates[del_datasets]
+del_datasets = list(np.delete(np.arange(scores.shape[0]), [2, 4]))
+del_transfer = list(np.delete(np.arange(scores.shape[2]), [3, 5]))
+scores = scores[del_datasets]
+transrates = transrates[del_datasets]
 
 """
 Add GPT
 """
+# best
 gpt_scores = np.load("results/transfer/di_bac_synth15260True_imgnet.npy")
 gpt_transrates = np.load("results/transfer/di_transrates_synth15260True_imgnet.npy")
+# worse
+# gpt_scores = np.load("results/transfer/di_bac_synth1960True_imgnet.npy")
+# gpt_transrates = np.load("results/transfer/di_transrates_synth1960True_imgnet.npy")
 
 # scores = np.concatenate((scores, gpt_scores), axis=2)
 # transrates = np.concatenate((transrates, gpt_transrates), axis=2)
@@ -116,7 +120,7 @@ for transfer_id in range(len(transfer_names)):
     ax.scatter(mean_plot_scores[transfer_id], mean_plot_transrates[transfer_id], color=colors[transfer_id])
     ax.text(mean_plot_scores[transfer_id]+.0005, mean_plot_transrates[transfer_id]-.005, s=transfer_names[transfer_id], fontsize=8)
 
-# ax.scatter(np.mean(gpt_scores, axis=(0, 1)), np.mean(gpt_transrates, axis=(0, 1)), color="tomato", s=80)
+ax.scatter(np.mean(gpt_scores, axis=(0, 1)), np.mean(gpt_transrates, axis=(0, 1)), color="tomato", s=80)
 
 ax.set_title("Mean plot over all transfer datasets")
 ax.set_xlabel("BAC")
