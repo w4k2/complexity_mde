@@ -17,7 +17,7 @@ n_epochs = 20
 """
 Pretrain Synth
 """
-X, y = make_classification(n_samples=300, n_features=100, n_informative=10, n_redundant=0, n_repeated=0, n_clusters_per_class=14, class_sep=0.06, hypercube=True, random_state=1410)
+X, y = make_classification(n_samples=116, n_features=9, n_informative=9, n_redundant=0, n_repeated=0, n_clusters_per_class=15, class_sep=0.26, hypercube=True, random_state=1410)
 
 ln = Norm2Scaler()
 di = DeepInsight(feature_extractor='pca', 
@@ -62,7 +62,7 @@ for epoch in tqdm(range(n_epochs), leave=False):
         loss.backward()
         optimizer.step()
 
-torch.save(model, "models/model_synth2716_di_imgnet.pt")
+torch.save(model, "models/model_synth15260True_di_imgnet.pt")
 
 exit()
 """

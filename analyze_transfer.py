@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import problexity as px
 from sklearn.feature_selection import SelectKBest, f_regression
+from scipy.stats.stats import pearsonr
 matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
 
 
@@ -15,22 +16,22 @@ transfer_names = ["imagenet"] + ['australian', 'banknote', 'breastcancoimbra', '
 # + ["gpt"]
 
 # DATASET x FOLDS x TRANSFER
-scores = np.load("results/transfer/di_bac_full.npy")
-transrates = np.load("results/transfer/di_transrates_full.npy")
-# scores = np.load("results/transfer/di_bac_full_wo_imgnet.npy")
-# transrates = np.load("results/transfer/di_transrates_full_wo_imgnet.npy")
+# scores = np.load("results/transfer/di_bac_full.npy")
+# transrates = np.load("results/transfer/di_transrates_full.npy")
+scores = np.load("results/transfer/di_bac_full_wo_imgnet.npy")
+transrates = np.load("results/transfer/di_transrates_full_wo_imgnet.npy")
 
 # # Remove breastcan and bupa (2, 4)
-del_datasets = list(np.delete(np.arange(scores.shape[0]), [2, 4]))
-del_transfer = list(np.delete(np.arange(scores.shape[2]), [3, 5]))
-scores = scores[del_datasets]
-transrates = transrates[del_datasets]
+# del_datasets = list(np.delete(np.arange(scores.shape[0]), [2, 4]))
+# del_transfer = list(np.delete(np.arange(scores.shape[2]), [3, 5]))
+# scores = scores[del_datasets]
+# transrates = transrates[del_datasets]
 
 """
 Add GPT
 """
-gpt_scores = np.load("results/transfer/di_bac_synth2716_imgnet.npy")
-gpt_transrates = np.load("results/transfer/di_transrates_synth2716_imgnet.npy")
+gpt_scores = np.load("results/transfer/di_bac_synth15260True_imgnet.npy")
+gpt_transrates = np.load("results/transfer/di_transrates_synth15260True_imgnet.npy")
 
 # scores = np.concatenate((scores, gpt_scores), axis=2)
 # transrates = np.concatenate((transrates, gpt_transrates), axis=2)
@@ -84,7 +85,9 @@ print(np.array(metrics)[kbest_argmax])
 
 # <eamcomplexity taking into account selected metrics
 # mean_complexity = np.mean(complexity[:, kbest_argmax[-1:]], axis=1)
-mean_complexity = np.mean(complexity[:, kbest_argmax[:1]], axis=1)
+# mean_complexity = np.mean(complexity[:, kbest_argmax[:1]], axis=1)
+mean_complexity = complexity[:, kbest_argmax][:, 0]
+# mean_complexity = np.mean(complexity[:, kbest_argmax][:, [0, 1, 2, 3]], axis=1)
 
 fig, ax = plt.subplots(1, 1, figsize=(10, 10))
 cmap = matplotlib.colormaps['tab20c']
@@ -102,6 +105,8 @@ ax.grid(ls=":", c=(.7, .7, .7))
 plt.tight_layout()
 plt.savefig("figures/all_bac_complexity.png", dpi=200)
 plt.close()
+print(f_regression(mean_complexity.reshape(-1, 1), mean_plot_scores[1:]))
+print(pearsonr(mean_complexity, mean_plot_scores[1:]))
 
 fig, ax = plt.subplots(1, 1, figsize=(10, 10))
 cmap = matplotlib.colormaps['tab20c']
@@ -111,7 +116,7 @@ for transfer_id in range(len(transfer_names)):
     ax.scatter(mean_plot_scores[transfer_id], mean_plot_transrates[transfer_id], color=colors[transfer_id])
     ax.text(mean_plot_scores[transfer_id]+.0005, mean_plot_transrates[transfer_id]-.005, s=transfer_names[transfer_id], fontsize=8)
 
-ax.scatter(np.mean(gpt_scores, axis=(0, 1)), np.mean(gpt_transrates, axis=(0, 1)), color="tomato", s=80)
+# ax.scatter(np.mean(gpt_scores, axis=(0, 1)), np.mean(gpt_transrates, axis=(0, 1)), color="tomato", s=80)
 
 ax.set_title("Mean plot over all transfer datasets")
 ax.set_xlabel("BAC")
@@ -126,7 +131,9 @@ ax.grid(ls=":", c=(.7, .7, .7))
 plt.tight_layout()
 plt.savefig("figures/transfer/all_transfer.png", dpi=200)
 plt.close()
-
+print(f_regression(mean_plot_transrates[1:].reshape(-1, 1), mean_plot_scores[1:]))
+print(pearsonr(mean_plot_transrates[1:], mean_plot_scores[1:]))
+# exit()
 """
 Heatmaps for TransRate and BAC
 """
@@ -166,11 +173,17 @@ for data_id, data_name in enumerate(dataset_names):
     colors = [cmap(i) for i in np.linspace(0, 1, len(transfer_names))]
 
     for transfer_id, transfer in enumerate(transfer_names):
-        if transfer != data_name:
-            ax.scatter(mean_scores[data_id][transfer_id], mean_transrates[data_id][transfer_id], label=transfer, color=colors[transfer_id])
-            ax.text(mean_scores[data_id][transfer_id]+.001, mean_transrates[data_id][transfer_id]-.01, s=transfer, fontsize=8)
+        # if transfer != data_name:
+        #     transfer
+        #     ax.scatter(mean_scores[data_id][transfer_id], mean_transrates[data_id][transfer_id], label=transfer, color=colors[transfer_id])
+        #     ax.text(mean_scores[data_id][transfer_id]+.001, mean_transrates[data_id][transfer_id]-.01, s=transfer, fontsize=8)
+            
+        if transfer != data_name and transfer != 'imagenet':
+            # complexity
+            ax.scatter(mean_scores[data_id][transfer_id], mean_complexity[transfer_id-1], color=colors[transfer_id])
+            ax.text(mean_scores[data_id][transfer_id]+.001, mean_complexity[transfer_id-1]-.01, s=transfer, fontsize=8)
 
-    ax.scatter(np.mean(gpt_scores, axis=(1))[data_id], np.mean(gpt_transrates, axis=(1))[data_id], color="tomato", s=80)
+    # ax.scatter(np.mean(gpt_scores, axis=(1))[data_id], np.mean(gpt_transrates, axis=(1))[data_id], color="tomato", s=80)
 
     ax.set_title(data_name)
     ax.set_xlabel("BAC")

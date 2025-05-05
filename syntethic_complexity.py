@@ -12,7 +12,8 @@ best_n1 = 0
 for n_clusters in clusters:
     for sep in class_seps:
         for hyper in hypercube:
-            X, y = make_classification(n_samples=300, n_features=100, n_informative=10, n_redundant=0, n_repeated=0, n_clusters_per_class=n_clusters, class_sep=sep, hypercube=hyper, random_state=1410)
+            # X, y = make_classification(n_samples=300, n_features=100, n_informative=10, n_redundant=0, n_repeated=0, n_clusters_per_class=n_clusters, class_sep=sep, hypercube=hyper, random_state=1410)
+            X, y = make_classification(n_samples=116, n_features=9, n_informative=9, n_redundant=0, n_repeated=0, n_clusters_per_class=n_clusters, class_sep=sep, hypercube=hyper, random_state=1410)
 
             # cc = px.ComplexityCalculator()
             cc = px.n1(X, y)
