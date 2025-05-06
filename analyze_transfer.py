@@ -16,16 +16,16 @@ transfer_names = ["imagenet"] + ['australian', 'banknote', 'breastcancoimbra', '
 # + ["gpt"]
 
 # DATASET x FOLDS x TRANSFER
-scores = np.load("results/transfer/di_bac_full.npy")
-transrates = np.load("results/transfer/di_transrates_full.npy")
-# scores = np.load("results/transfer/di_bac_full_wo_imgnet.npy")
-# transrates = np.load("results/transfer/di_transrates_full_wo_imgnet.npy")
+# scores = np.load("results/transfer/di_bac_full.npy")
+# transrates = np.load("results/transfer/di_transrates_full.npy")
+scores = np.load("results/transfer/di_bac_full_wo_imgnet.npy")
+transrates = np.load("results/transfer/di_transrates_full_wo_imgnet.npy")
 
 # # Remove breastcan and bupa (2, 4)
-del_datasets = list(np.delete(np.arange(scores.shape[0]), [2, 4]))
-del_transfer = list(np.delete(np.arange(scores.shape[2]), [3, 5]))
-scores = scores[del_datasets]
-transrates = transrates[del_datasets]
+# del_datasets = list(np.delete(np.arange(scores.shape[0]), [2, 4]))
+# del_transfer = list(np.delete(np.arange(scores.shape[2]), [3, 5]))
+# scores = scores[del_datasets]
+# transrates = transrates[del_datasets]
 
 """
 Add GPT

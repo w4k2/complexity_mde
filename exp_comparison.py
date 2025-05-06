@@ -18,16 +18,17 @@ from utils import Data
 dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 # dataset_names = ['australian', 'banknote']
 # DATASET x FOLDS x TRANSFER
-scores = np.load("results/transfer/di_bac_full.npy")
-transrates = np.load("results/transfer/di_transrates_full.npy")
+# scores = np.load("results/transfer/di_bac_full.npy")
+# transrates = np.load("results/transfer/di_transrates_full.npy")
+scores = np.load("results/transfer/di_bac_full_wo_imgnet.npy")
+transrates = np.load("results/transfer/di_transrates_full_wo_imgnet.npy")
 
-# # Remove breastcan and bupa (2, 4)
-del_datasets = list(np.delete(np.arange(scores.shape[0]), [2, 4]))
-# del_transfer = list(np.delete(np.arange(scores.shape[2]), [3, 5]))
-scores = scores[del_datasets]
-# scores = scores[:, :, del_transfer]
-transrates = transrates[del_datasets]
-# transrates = transrates[:, :, del_transfer]
+
+# # Remove breastcan and bupa (2, 4) FOR IMGNET
+# del_datasets = list(np.delete(np.arange(scores.shape[0]), [2, 4]))
+# scores = scores[del_datasets]
+# transrates = transrates[del_datasets]
+
 # DATASET x TRANSFER
 mean_scores = np.mean(scores, axis=1).squeeze()
 mean_transrates = np.mean(transrates, axis=1).squeeze()
@@ -51,12 +52,10 @@ for data_id, data_name in enumerate(dataset_names):
 
 best_model_bac = np.array(best_model_bac)
 best_model_transrate = np.array(best_model_transrate)
+
 """
 Experiment
 """
-
-
-
 data = Data(selection=dataset_names, path="datasets/")
 datasets = data.load()
 
@@ -65,13 +64,9 @@ transfer_names = np.concatenate((np.array(["imagenet" for i in range(best_model_
 # Results
 # DATASETS x FOLDS x TRANSFER (imagenet | best BAC | best transrate) x EPOCH
 n_epochs = 50
-# results = np.zeros((len(datasets), 10, 3, n_epochs))
-results = np.load("results/transfer/comparison_imgnet_finetuning.npy")
+results = np.zeros((len(datasets), 10, 3, n_epochs))
 
 for data_id, dataset_name in enumerate(tqdm(datasets)):
-    if data_name == "breastcancoimbra":
-        exit()
-
     # print(dataset_name)
     X, y = datasets[dataset_name][0], datasets[dataset_name][1]
     
@@ -105,14 +100,13 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
                 # Model
                 num_classes = 2
                 batch_size = 8
-                
 
                 if transfer == "imagenet":
-                    model = resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
-                    # model = resnet18(weights=None)
+                    # model = resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+                    model = resnet18(weights=None)
                 else:
-                    model = torch.load("models/model_%s_di.pt" % transfer, weights_only=False)
-                    # model = torch.load("models/model_%s_di_wo_imgnet.pt" % transfer, weights_only=False)
+                    # model = torch.load("models/model_%s_di.pt" % transfer, weights_only=False)
+                    model = torch.load("models/model_%s_di_wo_imgnet.pt" % transfer, weights_only=False)
 
                 # Extraction or Fine-tuning
                 # for param in model.parameters():
@@ -163,5 +157,5 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
                     
                     results[data_id, fold_id, transfer_id, epoch] = balanced_accuracy_score(y_test, preds)
 
-                np.save("results/transfer/comparison_imgnet_finetuning", results)
-                # np.save("results/transfer/comparison_wo_imgnet_finetuning", results)
+                # np.save("results/transfer/comparison_imgnet_finetuning", results)
+                np.save("results/transfer/comparison_wo_imgnet_finetuning", results)

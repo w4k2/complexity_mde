@@ -60,7 +60,8 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
         num_classes = 2
         batch_size = 8
 
-        model = torch.load("models/model_breastcancoimbra_di.pt", weights_only=False)
+        # model = torch.load("models/model_breastcancoimbra_di.pt", weights_only=False)
+        model = torch.load("models/model_monkone_di_wo_imgnet.pt", weights_only=False)
 
         # Extraction or Fine-tuning
         # for param in model.parameters():
@@ -108,4 +109,4 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
             
             results[data_id, fold_id, 0, epoch] = balanced_accuracy_score(y_test, preds)
 
-        np.save("results/transfer/comparison_imgnet_finetuning_complexity", results)
+        np.save("results/transfer/comparison_wo_imgnet_finetuning_complexity", results)

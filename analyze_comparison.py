@@ -9,41 +9,48 @@ dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'g
 # DATASETS x FOLDS x TRANSFER (imagenet | best BAC | best transrate) x EPOCH
 # scores = np.load("results/transfer/comparison_imgnet_extraction.npy")
 scores = np.load("results/transfer/comparison_imgnet_finetuning.npy")
+scores_complexity = np.load("results/transfer/comparison_imgnet_finetuning_complexity.npy")
 
 # DATASETS x TRANSFER (imagenet | best BAC | best transrate) x EPOCH
 mean_scores = np.mean(scores, axis=1)
+mean_scores_complexity = np.mean(scores_complexity, axis=1)
 
 transfer_names = ["imagenet", "best BAC", "best transrate"]
 
 # for each dataset
-# for data_id in range(mean_scores.shape[0]):
-#     fig, ax = plt.subplots(1, 1, figsize=(15, 10))
+for data_id in range(mean_scores.shape[0]):
+    fig, ax = plt.subplots(1, 1, figsize=(15, 10))
 
-#     for i, scores in enumerate(mean_scores[data_id]):
-#         ax.plot(gaussian_filter1d(scores, 3), label=transfer_names[i])
+    for i, scores in enumerate(mean_scores[data_id]):
+        ax.plot(gaussian_filter1d(scores, 3), label=transfer_names[i])
+
+    ax.plot(gaussian_filter1d(mean_scores_complexity[data_id, 0], 3), label="Highest complexity")
     
-#     ax.set_xticks(np.arange(0, 50, 1), [str(i+1) for i in np.arange(0, 50, 1)])
-#     ax.set_xlim(-.2, 49.2)
-#     ax.grid(ls=":", c=(.7, .7, .7))
-#     ax.set_title(dataset_names[data_id])
+    ax.set_xticks(np.arange(0, 50, 1), [str(i+1) for i in np.arange(0, 50, 1)])
+    ax.set_xlim(-.2, 49.2)
+    ax.grid(ls=":", c=(.7, .7, .7))
+    ax.set_title(dataset_names[data_id])
 
-#     plt.legend()
-#     plt.tight_layout()
-#     plt.savefig("foo.png")
-#     sleep(2)
-#     plt.close()
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig("foo.png")
+    # sleep(2)
+    plt.close()
 
 # mean plot for all datasets
 # TRANSFER (imagenet | best BAC | best transrate) x EPOCH
 data_mean_scores = np.mean(mean_scores, axis=0)
+data_mean_scores_complexity = np.mean(mean_scores_complexity, axis=0)
 
 fig, ax = plt.subplots(1, 1, figsize=(15, 10))
 
 for i, scores in enumerate(data_mean_scores):
     ax.plot(gaussian_filter1d(scores, 3), label=transfer_names[i])
+ax.plot(gaussian_filter1d(data_mean_scores_complexity[0], 3), label="Highest complexity")
 
 ax.set_xticks(np.arange(0, 50, 1), [str(i+1) for i in np.arange(0, 50, 1)])
 ax.set_xlim(-.2, 49.2)
+ax.set_ylim(.5, 1.0)
 ax.grid(ls=":", c=(.7, .7, .7))
 
 plt.legend()
