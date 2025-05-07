@@ -31,69 +31,68 @@ Get complexity dictionaries for generation using ChatGPT
 """
 Complexity space PCA
 """
-pca = PCA(n_components=2, random_state=None)
-complexity_space = pca.fit_transform(complexity)
-print(pca.explained_variance_ratio_)
+# pca = PCA(n_components=2, random_state=None)
+# complexity_space = pca.fit_transform(complexity)
+# print(pca.explained_variance_ratio_)
 
-cmap = matplotlib.colormaps['tab20c']
-colors = [cmap(i) for i in np.linspace(0, 1, len(dataset_names)+1)]
+# cmap = matplotlib.colormaps['tab20c']
+# colors = [cmap(i) for i in np.linspace(0, 1, len(dataset_names)+1)]
 
-fig, ax = plt.subplots(1, 1, figsize=(10, 10))
-for data_id, data_name in enumerate(dataset_names):
-    ax.scatter(complexity_space[data_id, 0], complexity_space[data_id, 1], color=colors[data_id+1])
-    ax.text(complexity_space[data_id, 0]+.03, complexity_space[data_id, 1]-.02, s=dataset_names[data_id], fontsize=8)
+# fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+# for data_id, data_name in enumerate(dataset_names):
+#     ax.scatter(complexity_space[data_id, 0], complexity_space[data_id, 1], color=colors[data_id+1])
+#     ax.text(complexity_space[data_id, 0]+.03, complexity_space[data_id, 1]-.02, s=dataset_names[data_id], fontsize=8)
 
 """
 Add GPT data to plot
 """
-data = np.genfromtxt('gpt_data/gpt_dataset.csv', delimiter=',', skip_header=1)
-X, y = data[:, :-1].astype(float), data[:, -1].astype(int)
-cc = px.ComplexityCalculator()
-cc.fit(X, y)
-gpt_complexity = cc.complexity
-gpt_complexity = pca.transform([gpt_complexity])
-ax.scatter(gpt_complexity[0, 0], gpt_complexity[0, 1], color="tomato", s=10)
+# data = np.genfromtxt('gpt_data/gpt_dataset.csv', delimiter=',', skip_header=1)
+# X, y = data[:, :-1].astype(float), data[:, -1].astype(int)
+# cc = px.ComplexityCalculator()
+# cc.fit(X, y)
+# gpt_complexity = cc.complexity
+# gpt_complexity = pca.transform([gpt_complexity])
+# ax.scatter(gpt_complexity[0, 0], gpt_complexity[0, 1], color="tomato", s=10)
 
-ax.grid(ls=":", c=(.7, .7, .7))
-plt.tight_layout()
-plt.savefig("figures/complexity/all_space.png")
-exit()
+# ax.grid(ls=":", c=(.7, .7, .7))
+# plt.tight_layout()
+# plt.savefig("figures/complexity/all_space.png")
+# exit()
 
 """
 Complexity signature
 """
-best_data = ["heart", "breastcancoimbra", "pima", "liver", "german", "australian", "mammographic", "spambase", "banknote"]
-fig, ax = plt.subplots(1, 1, figsize=(10, 10))
-for data_id, data_name in enumerate(dataset_names):
-    if data_name in best_data:
-        ax.plot(gaussian_filter1d(complexity[data_id], 4), color=colors[data_id+1])
-        ax.plot(gaussian_filter1d(complexity[data_id], 4), color=colors[data_id+1])
+# best_data = ["heart", "breastcancoimbra", "pima", "liver", "german", "australian", "mammographic", "spambase", "banknote"]
+# fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+# for data_id, data_name in enumerate(dataset_names):
+#     if data_name in best_data:
+#         ax.plot(gaussian_filter1d(complexity[data_id], 4), color=colors[data_id+1])
+#         ax.plot(gaussian_filter1d(complexity[data_id], 4), color=colors[data_id+1])
 
-ax.set_xticks(np.arange(0, 22, 1), metrics, rotation=45)
-ax.set_xlim(0, 21)
-ax.grid(ls=":", c=(.7, .7, .7))
-plt.tight_layout()
-plt.savefig("figures/complexity/all_signature.png")
+# ax.set_xticks(np.arange(0, 22, 1), metrics, rotation=45)
+# ax.set_xlim(0, 21)
+# ax.grid(ls=":", c=(.7, .7, .7))
+# plt.tight_layout()
+# plt.savefig("figures/complexity/all_signature.png")
 # exit()
 
 """
 Metric values for each dataset
 """
 
-cmap = matplotlib.colormaps['tab20c']
-colors = [cmap(i) for i in np.linspace(0, 1, len(metrics))]
+cmap = matplotlib.colormaps['tab20b']
+colors = np.array([cmap(i) for i in np.linspace(0, 1, len(metrics))])
 
 for data_id, data_name in enumerate(dataset_names):
-    fig, ax = plt.subplots(1, 1, figsize=(15, 10))
+    fig, ax = plt.subplots(1, 1, figsize=(15, 8))
     ax.bar(metrics, complexity[data_id], color=colors)
     ax.grid(ls=":", c=(.7, .7, .7))
+    ax.set_xticks(np.arange(0, 22, 1), metrics, rotation=45)
+    ax.set_title(data_name)
+    ax.set_ylabel("Complexity measure value")
+    ax.spines[['right', 'top']].set_visible(False)
+    ax.set_ylim(0, 1)
     
     plt.tight_layout()
     plt.savefig("figures/complexity/%s_complexity.png" % (data_name))
-
-fig, ax = plt.subplots(1, 1, figsize=(15, 10))
-ax.bar(metrics, gpt_complexity, color=colors)
-ax.grid(ls=":", c=(.7, .7, .7))
-
-plt.tight_layout()
-plt.savefig("figures/complexity/gpt_complexity.png")
+    plt.savefig("figures/complexity/%s_complexity.eps" % (data_name))
