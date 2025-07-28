@@ -5,14 +5,22 @@ from scipy.ndimage import gaussian_filter1d
 from tabulate import tabulate
 from scipy import stats
 from scipy.stats import rankdata, wilcoxon
-
+import matplotlib
+matplotlib.rcParams.update({'font.size': 11, "font.family" : "monospace"})
 
 dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 
 # DATASETS x FOLDS x TRANSFER (imagenet | best BAC | best transrate) x EPOCH
-# scores = np.load("results/transfer/comparison_imgnet_extraction.npy")
+
+# imgnet
 scores = np.load("results/transfer/comparison_imgnet_finetuning.npy")
 scores_complexity = np.load("results/transfer/comparison_imgnet_finetuning_complexity.npy")
+
+# wo
+# scores = np.load("results/transfer/comparison_wo_imgnet_finetuning.npy")
+# scores_complexity = np.load("results/transfer/comparison_wo_imgnet_finetuning_complexity.npy")
+# scores = scores[:14]
+# scores_complexity = scores_complexity[:14]
 
 # DATASETS x TRANSFER (imagenet | best BAC | best transrate) x EPOCH
 mean_scores = np.mean(scores, axis=1)
@@ -45,23 +53,30 @@ transfer_names = ["Imagenet", "Best BAC", "Best TransRate"]
 data_mean_scores = np.mean(mean_scores, axis=0)
 data_mean_scores_complexity = np.mean(mean_scores_complexity, axis=0)
 
-fig, ax = plt.subplots(1, 1, figsize=(12, 5))
+fig, ax = plt.subplots(1, 1, figsize=(11, 5))
 
 for i, scores in enumerate(data_mean_scores):
-    ax.plot(gaussian_filter1d(scores, 1), label=transfer_names[i])
+    if i == 0:
+        ax.plot(gaussian_filter1d(scores, 1), label="Imagenet")
+    else:
+        ax.plot(gaussian_filter1d(scores, 1), label=transfer_names[i])
 ax.plot(gaussian_filter1d(data_mean_scores_complexity[0], 1), label="Highest complexity")
 
 ax.set_xticks(np.arange(0, 50, 1), [str(i+1) for i in np.arange(0, 50, 1)])
 ax.set_xlim(-.2, 49.2)
-ax.set_ylim(.55, 1.0)
+ax.set_ylim(.45, 1.0)
 ax.grid(ls=":", c=(.7, .7, .7))
 ax.spines[['right', 'top']].set_visible(False)
 ax.set_ylabel("Mean Balanced accuracy score over all datasets")
 ax.set_xlabel("Fine-tuning Epoch")
+# ax.set_title("Fine-tuning previously selected models (trained from scratch)")
+ax.set_title("Fine-tuning previously selected models (with fine-tuned ImageNet weights)")
 
 plt.legend()
 plt.tight_layout()
 plt.savefig("bar.png")
+# plt.savefig("figures/comparison_wo_imgnet.eps")
+plt.savefig("figures/comparison_imgnet.eps")
 plt.close()
 
 # Table
@@ -97,6 +112,9 @@ transfer_names = ["Imagenet", "Best BAC", "Best TransRate", "Highest complexity"
 scores = np.load("results/transfer/comparison_imgnet_finetuning.npy")
 scores_complexity = np.load("results/transfer/comparison_imgnet_finetuning_complexity.npy")
 
+# scores = np.load("results/transfer/comparison_wo_imgnet_finetuning.npy")
+# scores_complexity = np.load("results/transfer/comparison_wo_imgnet_finetuning_complexity.npy")
+
 for i, data in  enumerate(scores):
     if np.mean(data[:, 2]) == 0:
         data[:, 2] = data[:, 1]
@@ -106,11 +124,11 @@ for i, data in  enumerate(scores):
 total_scores = np.concatenate((scores, scores_complexity), axis=2)
 
 # not all datasets
-total_scores = total_scores[:14]
-dataset_names = dataset_names[:14]
+# total_scores = total_scores[:14]
+# dataset_names = dataset_names[:14]
 
 # DATA x FOLDS x MODEL (choose epoch)
-total_scores = total_scores[:, :, :, -1]
+total_scores = total_scores[:, :, :, 4]
 # DATA x MODEL
 mean_total_scores = np.mean(total_scores, axis=1)
 
@@ -140,7 +158,7 @@ for data_id, data in enumerate(dataset_names):
         for c in conclusions])
     
     
-print(tabulate(t, headers=transfer_names, floatfmt="%.3f"))
+print(tabulate(t, headers=transfer_names, floatfmt="%.3f", tablefmt="latex_booktabs"))
 
 # Wilcoxon
 # DATASETS x ENCODINGS
@@ -163,5 +181,5 @@ w.append([''] + [", ".join(["%i" % i for i in c])
                              if len(c) > 0 and len(c) < 4-1 else ("all" if len(c) == 4-1 else "---")
                              for c in conclusions])
 
-tab_w = tabulate(w, headers=transfer_names)
+tab_w = tabulate(w, headers=transfer_names, tablefmt="latex_booktabs")
 print(tab_w)
