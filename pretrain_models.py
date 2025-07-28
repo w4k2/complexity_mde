@@ -17,6 +17,7 @@ n_epochs = 20
 """
 Pretrain Synth
 """
+"""
 # best
 # X, y = make_classification(n_samples=116, n_features=9, n_informative=9, n_redundant=0, n_repeated=0, n_clusters_per_class=15, class_sep=0.26, hypercube=True, random_state=1410)
 # worst
@@ -71,6 +72,8 @@ for epoch in tqdm(range(n_epochs), leave=False):
 torch.save(model, "models/model_synth1960True_di_imgnet.pt")
 
 exit()
+"""
+
 """
 Pretrain real
 """
