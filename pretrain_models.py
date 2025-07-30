@@ -12,7 +12,6 @@ from utils import Data
 from sklearn.decomposition import PCA
 from sklearn.datasets import make_classification
 
-
 n_epochs = 20
 """
 Pretrain Synth
