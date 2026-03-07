@@ -18,10 +18,12 @@ from utils import Data
 dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 # dataset_names = ['australian', 'banknote']
 # DATASET x FOLDS x TRANSFER
-# scores = np.load("results/transfer/di_bac_full.npy")
-# transrates = np.load("results/transfer/di_transrates_full.npy")
-scores = np.load("results/transfer/di_bac_full_wo_imgnet.npy")
-transrates = np.load("results/transfer/di_transrates_full_wo_imgnet.npy")
+# scores = np.load("results2/transfer2/di_bac_full.npy")
+# transrates = np.load("results2/transfer2/di_transrates_full.npy")
+# hscores = np.load("results2/transfer2/v2_di_hscores_full.npy")
+scores = np.load("results2/transfer2/v2_di_bac_full_wo_imgnet.npy")
+transrates = np.load("results2/transfer2/v2_di_transrates_full_wo_imgnet.npy")
+hscores = np.load("results2/transfer2/v2_di_hscores_full_wo_imgnet.npy")
 
 
 # # Remove breastcan and bupa (2, 4) FOR IMGNET
@@ -32,13 +34,14 @@ transrates = np.load("results/transfer/di_transrates_full_wo_imgnet.npy")
 # DATASET x TRANSFER
 mean_scores = np.mean(scores, axis=1).squeeze()
 mean_transrates = np.mean(transrates, axis=1).squeeze()
+mean_hscores = np.mean(hscores, axis=1).squeeze()
 
 """
 Choose the best models for each dataset (not imagenet)
 """
 best_model_bac = []
 best_model_transrate = []
-
+best_model_hscore = []
 for data_id, data_name in enumerate(dataset_names):
     tmp_names = np.delete(np.array(dataset_names), [data_id])
 
@@ -50,8 +53,13 @@ for data_id, data_name in enumerate(dataset_names):
     data_transrate_best = np.argsort(-np.delete(data_transrate, [data_id]))
     best_model_transrate.append([tmp_names[data_transrate_best][0]])
 
+    data_hscore = mean_hscores[data_id][1:]
+    data_hscore_best = np.argsort(-np.delete(data_hscore, [data_id]))
+    best_model_hscore.append([tmp_names[data_hscore_best][0]])
+
 best_model_bac = np.array(best_model_bac)
 best_model_transrate = np.array(best_model_transrate)
+best_model_hscore = np.array(best_model_hscore)
 
 """
 Experiment
@@ -59,12 +67,12 @@ Experiment
 data = Data(selection=dataset_names, path="datasets/")
 datasets = data.load()
 
-transfer_names = np.concatenate((np.array(["imagenet" for i in range(best_model_bac.shape[0])]).reshape(-1, 1), best_model_bac, best_model_transrate), axis=1)
+transfer_names = np.concatenate((np.array(["imagenet" for i in range(best_model_bac.shape[0])]).reshape(-1, 1), best_model_bac, best_model_transrate, best_model_hscore), axis=1)
 
 # Results
-# DATASETS x FOLDS x TRANSFER (imagenet | best BAC | best transrate) x EPOCH
+# DATASETS x FOLDS x TRANSFER (imagenet | best BAC | best transrate | best hscore) x EPOCH
 n_epochs = 50
-results = np.zeros((len(datasets), 10, 3, n_epochs))
+results = np.zeros((len(datasets), 10, 4, n_epochs))
 
 for data_id, dataset_name in enumerate(tqdm(datasets)):
     # print(dataset_name)
@@ -115,7 +123,7 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
                 num_ftrs = model.fc.in_features
                 model.fc = nn.Linear(num_ftrs, num_classes)
 
-                device = torch.device("mps")
+                device = torch.device("cuda")
                 model = model.to(device)
 
                 """
@@ -157,5 +165,5 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
                     
                     results[data_id, fold_id, transfer_id, epoch] = balanced_accuracy_score(y_test, preds)
 
-                # np.save("results/transfer/comparison_imgnet_finetuning", results)
-                np.save("results/transfer/comparison_wo_imgnet_finetuning", results)
+                # np.save("results2/transfer2/comparison_imgnet_finetuning", results)
+                np.save("results2/transfer2/comparison_wo_imgnet_finetuning", results)

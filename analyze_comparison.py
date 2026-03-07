@@ -11,7 +11,7 @@ matplotlib.rcParams.update({'font.size': 11, "font.family" : "monospace"})
 dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 
 # DATASETS x FOLDS x TRANSFER (imagenet | best BAC | best transrate) x EPOCH
-
+# to do after exp_comparison
 # imgnet
 scores = np.load("results/transfer/comparison_imgnet_finetuning.npy")
 scores_complexity = np.load("results/transfer/comparison_imgnet_finetuning_complexity.npy")

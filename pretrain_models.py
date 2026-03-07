@@ -104,14 +104,14 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
     num_classes = 2
     batch_size = 8
     # weights = None
-    # weights = ResNet18_Weights.IMAGENET1K_V1
-    weights = None
+    weights = ResNet18_Weights.IMAGENET1K_V1
+    # weights = None
     
     model = resnet18(weights=weights)
     num_ftrs = model.fc.in_features
     model.fc = nn.Linear(num_ftrs, num_classes)
     
-    device = torch.device("mps")
+    device = torch.device("cuda")
     model = model.to(device)
 
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
@@ -134,4 +134,7 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
             loss.backward()
             optimizer.step()
 
-    torch.save(model, "models/model_%s_di_wo_imgnet.pt" % dataset_name)
+    # torch.save(model, "models/model_%s_di_wo_imgnet.pt" % dataset_name)
+    torch.save(model, "models/model_%s_di.pt" % dataset_name)
+
+

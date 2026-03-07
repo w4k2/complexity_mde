@@ -13,7 +13,7 @@ metrics = cc._metrics()
 
 dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 
-complexity = np.load("results/complexity_measures.npy")
+complexity = np.load("results2/complexity_measures.npy")
 print(np.mean(complexity, axis=1))
 
 
@@ -94,5 +94,5 @@ for data_id, data_name in enumerate(dataset_names):
     ax.set_ylim(0, 1)
     
     plt.tight_layout()
-    plt.savefig("figures/complexity/%s_complexity.png" % (data_name))
-    plt.savefig("figures/complexity/%s_complexity.eps" % (data_name))
+    plt.savefig("figures2/complexity2/%s_complexity.png" % (data_name))
+    plt.savefig("figures2/complexity2/%s_complexity.eps" % (data_name))
