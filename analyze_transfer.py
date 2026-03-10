@@ -21,9 +21,9 @@ transfer_names = ["imagenet"] + ['australian', 'banknote', 'breastcancoimbra', '
 # transrates = np.load("results2/transfer/v3_di_transrates_full_wo_imgnet.npy")
 # hscore = np.load("results2/transfer/v2_di_hscores_full_wo_imgnet.npy")
 
-scores = np.load("results2/transfer/v2_di_bac_full.npy")
-transrates = np.load("results2/transfer/v2_di_transrates_full.npy")
-hscore = np.load("results2/transfer/v2_di_hscores_full.npy")
+scores = np.load("results2/transfer2/v2_di_bac_full.npy")
+transrates = np.load("results2/transfer2/v2_di_transrates_full.npy")
+hscore = np.load("results2/transfer2/v2_di_hscores_full.npy")
 
 # old_transrates = np.load("results/transfer/di_transrates_full_wo_imgnet.npy")
 
@@ -120,7 +120,7 @@ print(kbest_scores[kbest_argmax[-1:]])
 print(np.array(metrics)[kbest_argmax])
 
 
-
+'''
 """
 Plot f_regression
 """
@@ -297,13 +297,13 @@ print(f_regression(mean_plot_transrates[1:].reshape(-1, 1), mean_plot_scores[1:]
 print(pearsonr(mean_plot_transrates[1:], mean_plot_scores[1:]))
 
 
-
+'''
 
 
 """
 Heatmaps for TransRate and BAC
 """
-fig, ax = plt.subplots(1, 2, figsize=(40, 20))
+fig, ax = plt.subplots(1, 3, figsize=(60, 20))
 
 for i in range(len(dataset_names)):
     for j in range(len(transfer_names)):
@@ -313,15 +313,20 @@ for i in range(len(dataset_names)):
 
 ax[0].imshow(mean_scores, cmap="binary_r")
 ax[1].imshow(mean_transrates, cmap="binary_r")
+ax[2].imshow(mean_hscore, cmap="binary_r")
 
 ax[0].set_xticks(range(len(transfer_names)), labels=transfer_names, rotation=65, fontsize=18)
 ax[0].set_yticks(range(len(dataset_names)), labels=dataset_names, fontsize=18)
 
 ax[1].set_xticks(range(len(transfer_names)), labels=transfer_names, rotation=65, fontsize=18)
 ax[1].set_yticks(range(len(dataset_names)), labels=dataset_names, fontsize=18)
+    
+ax[2].set_xticks(range(len(transfer_names)), labels=transfer_names, rotation=65, fontsize=18)
+ax[2].set_yticks(range(len(dataset_names)), labels=dataset_names, fontsize=18)
 
 ax[0].set_title("Balanced accuracy score", fontsize=25)
 ax[1].set_title("TransRate", fontsize=25)
+ax[2].set_title("H-score", fontsize=25)
 
 for i in range(len(dataset_names)):
     for j in range(len(transfer_names)):
@@ -339,17 +344,24 @@ for i in range(len(dataset_names)):
             else:
                 text = ax[1].text(j, i, np.round(mean_transrates[i, j], 2),
                         ha="center", va="center", color="w")
+            if np.round(mean_hscore[i, j], 2) > np.median(mean_hscore):
+                text = ax[2].text(j, i, np.round(mean_hscore[i, j], 2),
+                        ha="center", va="center", color="black")
+            else:
+                text = ax[2].text(j, i, np.round(mean_hscore[i, j], 2),
+                        ha="center", va="center", color="w")
         else:
             text = ax[0].text(j, i, "—",
                         ha="center", va="center", color="white")
             text = ax[1].text(j, i, "—",
                         ha="center", va="center", color="white")
-            
+            text = ax[2].text(j, i, "—",
+                        ha="center", va="center", color="white")    
 
 
 fig.tight_layout()
-plt.savefig("figures2/transfer2/v2_heatmap_wo_imgnet.png", dpi=200)
-plt.savefig("figures2/transfer2/v2_heatmap_wo_imgnet.eps")
+plt.savefig("figures2/transfer2/v2_heatmap.png", dpi=200)
+plt.savefig("figures2/transfer2/v2_heatmap.eps")
 
 
 
