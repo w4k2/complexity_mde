@@ -22,6 +22,8 @@ from utils import Data
 from utils import transrate
 from utils import hscore
 
+warnings.filterwarnings("ignore")
+
 SEED = 1410
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -39,9 +41,7 @@ N_REPEATS_METRIC = 5
 
 
 RESULTS_DIR = Path("results_runtime")
-FIG_DIR = Path("figures_runtime")
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-FIG_DIR.mkdir(parents=True, exist_ok=True)
 
 def set_seed(seed=SEED):
     random.seed(seed)
@@ -141,6 +141,13 @@ def compute_all_complexity_measures(X, y):
     return metric_values
 
 
+def compute_complexity_n2(X, y):
+    return px.n2(X, y)
+
+def compute_complexity_l1(X, y):
+    return px.l1(X, y)
+
+
 def dataset_cache_path(dataset_name):
     return RESULTS_DIR / f"features_{dataset_name}.npz"
 
@@ -206,6 +213,47 @@ def main():
             diff_record = {"dataset": dataset_name, "fold": fold_id}
             diff_record.update(diff_values)
             complexity_rows.append(diff_record)
+
+            # N2
+            _, n2_mean, n2_std, _ = timed_repeats(
+                compute_complexity_n2,
+                X_train,
+                y_train,
+                repeats=N_REPEATS_COMPLEXITY,
+                warmup=True,
+            )
+            runtime_rows.append({
+                "dataset": dataset_name,
+                "fold": fold_id,
+                "method": "complexity_n2",
+                "init": "raw_tabular",
+                "mean_seconds": n2_mean,
+                "std_seconds": n2_std,
+                "n_samples": int(X_train.shape[0]),
+                "n_features": int(X_train.shape[1]),
+                "size_proxy": int(X_train.shape[0] * X_train.shape[1]),
+            })
+
+            # L1
+            _, l1_mean, l1_std, _ = timed_repeats(
+                compute_complexity_l1,
+                X_train,
+                y_train,
+                repeats=N_REPEATS_COMPLEXITY,
+                warmup=True,
+            )
+            runtime_rows.append({
+                "dataset": dataset_name,
+                "fold": fold_id,
+                "method": "complexity_l1",
+                "init": "raw_tabular",
+                "mean_seconds": l1_mean,
+                "std_seconds": l1_std,
+                "n_samples": int(X_train.shape[0]),
+                "n_features": int(X_train.shape[1]),
+                "size_proxy": int(X_train.shape[0] * X_train.shape[1]),
+            })
+
             pbar.update(1)
 
             X_train_img, enc_mean, enc_std, _ = timed_repeats(
@@ -300,158 +348,18 @@ def main():
     runtime_df = pd.DataFrame(runtime_rows)
     complexity_df = pd.DataFrame(complexity_rows)
 
-    runtime_df.to_csv(RESULTS_DIR / "runtime_summary_per_fold_2.csv", index=False)
-    complexity_df.to_csv(RESULTS_DIR / "complexity_values_per_fold_2.csv", index=False)
+    runtime_df.to_csv(RESULTS_DIR / "runtime_summary_per_fold_4.csv", index=False)
+    complexity_df.to_csv(RESULTS_DIR / "complexity_values_per_fold_4.csv", index=False)
 
     global_runtime_df = (
         runtime_df.groupby(["method", "init"])["mean_seconds"]
         .agg(["mean", "std", "median", "min", "max"])
         .reset_index()
     )
-    global_runtime_df.to_csv(RESULTS_DIR / "runtime_global_2.csv", index=False)
+    global_runtime_df.to_csv(RESULTS_DIR / "runtime_global_4.csv", index=False)
     print("\nGlobal runtime summary:")
     print(global_runtime_df)
 
-    matplotlib.rcParams.update({'font.size': 13})
-
-    complexity_vals = runtime_df[
-        (runtime_df["method"] == "complexity_22") &
-        (runtime_df["init"] == "raw_tabular")
-    ]["mean_seconds"].values
-    complexity_mean = float(np.mean(complexity_vals))
-    complexity_std = float(np.std(complexity_vals))
-
-    encoding_vals = runtime_df[
-        (runtime_df["method"] == "encoding") &
-        (runtime_df["init"] == "shared")
-    ]["mean_seconds"].values
-    encoding_mean = float(np.mean(encoding_vals))
-    encoding_std = float(np.std(encoding_vals))
-
-    def metric_stats(method, init_mode):
-        vals = runtime_df[
-            (runtime_df["method"] == method) &
-            (runtime_df["init"] == init_mode)
-        ]["mean_seconds"].values
-        return float(np.mean(vals)), float(np.std(vals))
-
-    hs_img_mean, hs_img_std = metric_stats("hscore", "imagenet")
-    hs_rnd_mean, hs_rnd_std = metric_stats("hscore", "random")
-    tr_img_mean, tr_img_std = metric_stats("transrate", "imagenet")
-    tr_rnd_mean, tr_rnd_std = metric_stats("transrate", "random")
-
-    labels = [
-        "complexity\n22",
-        "hscore\nimagenet",
-        "hscore\nrandom",
-        "transrate\nimagenet",
-        "transrate\nrandom",
-    ]
-
-    x = np.arange(len(labels))
-    width = 0.75
-
-    bottom_vals = np.array([
-        0.0,
-        encoding_mean,
-        encoding_mean,
-        encoding_mean,
-        encoding_mean,
-    ])
-
-    top_vals = np.array([
-        complexity_mean,
-        hs_img_mean,
-        hs_rnd_mean,
-        tr_img_mean,
-        tr_rnd_mean,
-    ])
-
-    fig, ax = plt.subplots(figsize=(10, 5))
-
-    # lower stack
-    ax.bar(
-        x,
-        bottom_vals,
-        width=width,
-        label="encoding",
-    )
-
-    # upper stack
-    ax.bar(
-        x,
-        top_vals,
-        width=width,
-        bottom=bottom_vals,
-        label="metric",
-    )
-
-    # annotate totals
-    totals = bottom_vals + top_vals
-    for xi, total in zip(x, totals):
-        ax.text(xi, total * 1.05, f"{total:.3g}", ha="center", va="bottom", fontsize=10)
-
-    ax.set_xticks(x, labels)
-    ax.set_ylabel("Mean runtime [s]")
-    ax.set_title("Runtime comparison: encoding + metric (feature extraction excluded)")
-    ax.grid(ls=":", c=(.7, .7, .7), axis="y")
-    ax.spines[['right', 'top']].set_visible(False)
-    ax.set_yscale("log")
-    ax.legend(frameon=True)
-    plt.tight_layout()
-    plt.savefig(FIG_DIR / "runtime_stacked_encoding_metric.png", dpi=200)
-    plt.savefig(FIG_DIR / "runtime_stacked_encoding_metric.eps")
-    plt.close()
-
-
-    total_means = totals
-
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.bar(x, total_means, width=width)
-
-    for xi, total in zip(x, total_means):
-        ax.text(xi, total * 1.05, f"{total:.3g}", ha="center", va="bottom", fontsize=10)
-
-    ax.set_xticks(x, labels)
-    ax.set_ylabel("Mean runtime [s]")
-    ax.set_title("Total runtime comparison (encoding + metric)")
-    ax.grid(ls=":", c=(.7, .7, .7), axis="y")
-    ax.spines[['right', 'top']].set_visible(False)
-    ax.set_yscale("log")
-    plt.tight_layout()
-    plt.savefig(FIG_DIR / "runtime_total_bars.png", dpi=200)
-    plt.savefig(FIG_DIR / "runtime_total_bars.eps")
-    plt.close()
-
-    box_labels = [
-        "complexity\n22",
-        "encoding",
-        "hscore\nimagenet",
-        "hscore\nrandom",
-        "transrate\nimagenet",
-        "transrate\nrandom",
-    ]
-
-    box_data = [
-        runtime_df[(runtime_df["method"] == "complexity_22") & (runtime_df["init"] == "raw_tabular")]["mean_seconds"].values,
-        runtime_df[(runtime_df["method"] == "encoding") & (runtime_df["init"] == "shared")]["mean_seconds"].values,
-        runtime_df[(runtime_df["method"] == "hscore") & (runtime_df["init"] == "imagenet")]["mean_seconds"].values,
-        runtime_df[(runtime_df["method"] == "hscore") & (runtime_df["init"] == "random")]["mean_seconds"].values,
-        runtime_df[(runtime_df["method"] == "transrate") & (runtime_df["init"] == "imagenet")]["mean_seconds"].values,
-        runtime_df[(runtime_df["method"] == "transrate") & (runtime_df["init"] == "random")]["mean_seconds"].values,
-    ]
-
-    fig, ax = plt.subplots(figsize=(11, 5))
-    ax.boxplot(box_data, tick_labels=box_labels, showfliers=False)
-    ax.set_ylabel("Runtime [s]")
-    ax.set_title("Runtime distribution across datasets and folds")
-    ax.grid(ls=":", c=(.7, .7, .7), axis="y")
-    ax.spines[['right', 'top']].set_visible(False)
-    ax.set_yscale("log")
-    plt.tight_layout()
-    plt.savefig(FIG_DIR / "runtime_boxplot.png", dpi=200)
-    plt.savefig(FIG_DIR / "runtime_boxplot.eps")
-    plt.close()
 
 if __name__ == "__main__":
     main()
