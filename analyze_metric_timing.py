@@ -4,10 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
 
-matplotlib.rcParams.update({
-    "font.size": 13,
-    "font.family": "sans-serif",
-})
+matplotlib.rcParams.update({'font.size': 14, "font.family" : "monospace"})
 
 RUNTIME_CSV = "results_runtime/runtime_summary_per_fold_4.csv"
 OUT_DIR = "figures_runtime_with_extraction"
@@ -73,7 +70,7 @@ encoding_part = np.array([0.0, encoding_mean, encoding_mean, 0.0, 0.0,])
 feature_part = np.array([0.0, feat_img_mean, feat_img_mean, 0.0, 0.0,])
 metric_part = np.array([complexity_mean, hs_img_mean, tr_img_mean, n2_mean, l1_mean,])
 totals = encoding_part + feature_part + metric_part
-fig, ax = plt.subplots(figsize=(11, 6))
+fig, ax = plt.subplots(figsize=(12,7))
 
 ax.bar(x, encoding_part, width=w, color="#4C78A8", label="Encoding")
 ax.bar(x, feature_part, width=w, bottom=encoding_part, color="#72B7B2", label="Feature extraction")

@@ -120,7 +120,7 @@ print(kbest_scores[kbest_argmax[-1:]])
 print(np.array(metrics)[kbest_argmax])
 
 
-'''
+
 """
 Plot f_regression
 """
@@ -297,7 +297,7 @@ print(f_regression(mean_plot_transrates[1:].reshape(-1, 1), mean_plot_scores[1:]
 print(pearsonr(mean_plot_transrates[1:], mean_plot_scores[1:]))
 
 
-'''
+
 
 
 """
