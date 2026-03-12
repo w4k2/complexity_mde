@@ -141,11 +141,11 @@ def compute_all_complexity_measures(X, y):
     return metric_values
 
 
-def compute_complexity_n2(X, y):
-    return px.n2(X, y)
+def compute_complexity_l2(X, y):
+    return px.l2(X, y)
 
-def compute_complexity_l1(X, y):
-    return px.l1(X, y)
+def compute_complexity_density(X, y):
+    return px.density(X, y)
 
 
 def dataset_cache_path(dataset_name):
@@ -214,9 +214,9 @@ def main():
             diff_record.update(diff_values)
             complexity_rows.append(diff_record)
 
-            # N2
-            _, n2_mean, n2_std, _ = timed_repeats(
-                compute_complexity_n2,
+            # l2
+            _, l2_mean, l2_std, _ = timed_repeats(
+                compute_complexity_l2,
                 X_train,
                 y_train,
                 repeats=N_REPEATS_COMPLEXITY,
@@ -225,18 +225,18 @@ def main():
             runtime_rows.append({
                 "dataset": dataset_name,
                 "fold": fold_id,
-                "method": "complexity_n2",
+                "method": "complexity_l2",
                 "init": "raw_tabular",
-                "mean_seconds": n2_mean,
-                "std_seconds": n2_std,
+                "mean_seconds": l2_mean,
+                "std_seconds": l2_std,
                 "n_samples": int(X_train.shape[0]),
                 "n_features": int(X_train.shape[1]),
                 "size_proxy": int(X_train.shape[0] * X_train.shape[1]),
             })
 
-            # L1
-            _, l1_mean, l1_std, _ = timed_repeats(
-                compute_complexity_l1,
+            # density
+            _, density_mean, density_std, _ = timed_repeats(
+                compute_complexity_density,
                 X_train,
                 y_train,
                 repeats=N_REPEATS_COMPLEXITY,
@@ -245,10 +245,10 @@ def main():
             runtime_rows.append({
                 "dataset": dataset_name,
                 "fold": fold_id,
-                "method": "complexity_l1",
+                "method": "complexity_density",
                 "init": "raw_tabular",
-                "mean_seconds": l1_mean,
-                "std_seconds": l1_std,
+                "mean_seconds": density_mean,
+                "std_seconds": density_std,
                 "n_samples": int(X_train.shape[0]),
                 "n_features": int(X_train.shape[1]),
                 "size_proxy": int(X_train.shape[0] * X_train.shape[1]),
@@ -348,15 +348,15 @@ def main():
     runtime_df = pd.DataFrame(runtime_rows)
     complexity_df = pd.DataFrame(complexity_rows)
 
-    runtime_df.to_csv(RESULTS_DIR / "runtime_summary_per_fold_4.csv", index=False)
-    complexity_df.to_csv(RESULTS_DIR / "complexity_values_per_fold_4.csv", index=False)
+    runtime_df.to_csv(RESULTS_DIR / "runtime_summary_per_fold_5.csv", index=False)
+    complexity_df.to_csv(RESULTS_DIR / "complexity_values_per_fold_5.csv", index=False)
 
     global_runtime_df = (
         runtime_df.groupby(["method", "init"])["mean_seconds"]
         .agg(["mean", "std", "median", "min", "max"])
         .reset_index()
     )
-    global_runtime_df.to_csv(RESULTS_DIR / "runtime_global_4.csv", index=False)
+    global_runtime_df.to_csv(RESULTS_DIR / "runtime_global_5.csv", index=False)
     print("\nGlobal runtime summary:")
     print(global_runtime_df)
 

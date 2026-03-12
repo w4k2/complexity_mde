@@ -164,12 +164,8 @@ for data_id in range(len(dataset_names)):
     ax.text(mean_plot_scores[data_id+1]-.003, mean_complexity[data_id]+.005, s=dataset_names[data_id], fontsize=12)
     # ax.text(mean_plot_scores[data_id+1]-.001, mean_complexity[data_id]+.005, s=dataset_names[data_id], fontsize=10, rotation=-45)
 
-# ax.set_title("ResNet-18 trained from scratch \n Pearson correlation coefficient: %.3f, p-value: %.3f" % (pearsonr(mean_complexity, mean_plot_scores[1:])[0], pearsonr(mean_complexity, mean_plot_scores[1:])[1]))
-ax.set_title("Fine-tuned ResNet-18 pre-trained on ImageNet \n Pearson correlation coefficient: %.3f, p-value: %.3f "% (pearsonr(mean_complexity, mean_plot_scores[1:])[0], pearsonr(mean_complexity, mean_plot_scores[1:])[1]))
 ax.spines[['right', 'top']].set_visible(False)
 ax.set_xlabel("Mean Balanced accuracy")
-# ax.set_ylabel("L2")
-ax.set_ylabel("L1")
 ax.grid(ls=":", c=(.7, .7, .7))
 
 
@@ -177,11 +173,16 @@ print("x range:", mean_plot_scores.min(), mean_plot_scores.max())
 print("y range:", mean_complexity.min(), mean_complexity.max())
 
 # wo
+# ax.set_title("ResNet-18 trained from scratch \n Pearson correlation coefficient: %.3f, p-value: %.3f" % (pearsonr(mean_complexity, mean_plot_scores[1:])[0], pearsonr(mean_complexity, mean_plot_scores[1:])[1]))
 # ax.set_xlim((.66, 0.7))
-# ax.set_ylim((.31, .60))
+# ax.set_ylim((.6, 1.05))
+# ax.set_ylabel("Density")
+
 # imgnet
+ax.set_title("Fine-tuned ResNet-18 pre-trained on ImageNet \n Pearson correlation coefficient: %.3f, p-value: %.3f "% (pearsonr(mean_complexity, mean_plot_scores[1:])[0], pearsonr(mean_complexity, mean_plot_scores[1:])[1]))
+ax.set_ylabel("L2")
 ax.set_xlim((.74, 0.8))
-ax.set_ylim((0.0, .30))
+ax.set_ylim((0.0, .35))
 
 plt.tight_layout()
 # wo
