@@ -17,9 +17,9 @@ transfer_names = ["imagenet"] + ['australian', 'banknote', 'breastcancoimbra', '
 
 ##
 # DATASET x FOLDS x TRANSFER
-# scores = np.load("results2/transfer/v2_di_bac_full_wo_imgnet.npy")
-# transrates = np.load("results2/transfer/v3_di_transrates_full_wo_imgnet.npy")
-# hscore = np.load("results2/transfer/v2_di_hscores_full_wo_imgnet.npy")
+# scores = np.load("results2/transfer2/v2_di_bac_full_wo_imgnet.npy")
+# transrates = np.load("results2/transfer2/v2_di_transrates_full_wo_imgnet.npy")
+# hscore = np.load("results2/transfer2/v2_di_hscores_full_wo_imgnet.npy")
 
 scores = np.load("results2/transfer2/v2_di_bac_full.npy")
 transrates = np.load("results2/transfer2/v2_di_transrates_full.npy")
