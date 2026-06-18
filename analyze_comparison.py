@@ -10,17 +10,23 @@ matplotlib.rcParams.update({'font.size': 11, "font.family" : "monospace"})
 
 dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 
+# dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
+
 # DATASETS x FOLDS x TRANSFER (imagenet | best BAC | best transrate) x EPOCH
 # to do after exp_comparison
 # imgnet
-scores = np.load("results/transfer/comparison_imgnet_finetuning.npy")
-scores_complexity = np.load("results/transfer/comparison_imgnet_finetuning_complexity.npy")
+# scores = np.load("results/transfer/comparison_imgnet_finetuning.npy")
+# scores_complexity = np.load("results/transfer/comparison_imgnet_finetuning_complexity.npy")
 
 # wo
-# scores = np.load("results/transfer/comparison_wo_imgnet_finetuning.npy")
-# scores_complexity = np.load("results/transfer/comparison_wo_imgnet_finetuning_complexity.npy")
-# scores = scores[:14]
-# scores_complexity = scores_complexity[:14]
+scores = np.load("results/transfer/comparison_wo_imgnet_finetuning.npy")
+scores_complexity = np.load("results/transfer/comparison_wo_imgnet_finetuning_complexity.npy")
+scores = scores[:14]
+scores_complexity = scores_complexity[:14]
+
+# remove the 5th dataset
+# scores = np.delete(scores, 4, axis=0)
+# scores_complexity = np.delete(scores_complexity, 4, axis=0)
 
 # DATASETS x TRANSFER (imagenet | best BAC | best transrate) x EPOCH
 mean_scores = np.mean(scores, axis=1)
@@ -109,15 +115,19 @@ def t_test_corrected(a, b, J=2, k=5):
 
 transfer_names = ["Imagenet", "Best BAC", "Best TransRate", "Highest complexity"]
 
-scores = np.load("results/transfer/comparison_imgnet_finetuning.npy")
-scores_complexity = np.load("results/transfer/comparison_imgnet_finetuning_complexity.npy")
+# scores = np.load("results/transfer/comparison_imgnet_finetuning.npy")
+# scores_complexity = np.load("results/transfer/comparison_imgnet_finetuning_complexity.npy")
 
-# scores = np.load("results/transfer/comparison_wo_imgnet_finetuning.npy")
-# scores_complexity = np.load("results/transfer/comparison_wo_imgnet_finetuning_complexity.npy")
+scores = np.load("results/transfer/comparison_wo_imgnet_finetuning.npy")
+scores_complexity = np.load("results/transfer/comparison_wo_imgnet_finetuning_complexity.npy")
 
-for i, data in  enumerate(scores):
-    if np.mean(data[:, 2]) == 0:
-        data[:, 2] = data[:, 1]
+# remove the 5th dataset
+# scores = np.delete(scores, 4, axis=0)
+# scores_complexity = np.delete(scores_complexity, 4, axis=0)
+
+# for i, data in  enumerate(scores):
+#     if np.mean(data[:, 2]) == 0:
+#         data[:, 2] = data[:, 1]
 # exit()
 
 # DATA x FOLDS x MODEL x EPOCHS
@@ -128,9 +138,10 @@ total_scores = np.concatenate((scores, scores_complexity), axis=2)
 # dataset_names = dataset_names[:14]
 
 # DATA x FOLDS x MODEL (choose epoch)
-total_scores = total_scores[:, :, :, 4]
+total_scores = total_scores[:, :, :, 49]
 # DATA x MODEL
 mean_total_scores = np.mean(total_scores, axis=1)
+# print(data_mean_scores)
 
 print(np.mean(mean_total_scores, axis=0))
 
@@ -163,6 +174,7 @@ print(tabulate(t, headers=transfer_names, floatfmt="%.3f", tablefmt="latex_bookt
 # Wilcoxon
 # DATASETS x ENCODINGS
 ranks = rankdata(mean_total_scores, axis=1)
+print(np.mean(mean_total_scores, axis=0))
 mean_ranks = np.mean(ranks, axis=0)
 
 w = []
