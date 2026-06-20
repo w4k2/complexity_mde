@@ -12,25 +12,23 @@ matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
 dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 # dataset_names = ['australian', "banknote"]
 # transfer_names = ["imagenet"] + dataset_names + ["synth"]
-transfer_names = ["imagenet"] + ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin'] 
-# + ["gpt"]
+transfer_names = ["imagenet"] + ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 
 ##
 # DATASET x FOLDS x TRANSFER
-# scores = np.load("results2/transfer2/v2_di_bac_full_wo_imgnet.npy")
-# transrates = np.load("results2/transfer2/v2_di_transrates_full_wo_imgnet.npy")
-# hscore = np.load("results2/transfer2/v2_di_hscores_full_wo_imgnet.npy")
+scores = np.load("results2/transfer2/v2_di_bac_full_wo_imgnet.npy")
+transrates = np.load("results2/transfer2/v2_di_transrates_full_wo_imgnet.npy")
+hscore = np.load("results2/transfer2/v2_di_hscores_full_wo_imgnet.npy")
 
-scores = np.load("results2/transfer2/v2_di_bac_full.npy")
-transrates = np.load("results2/transfer2/v2_di_transrates_full.npy")
-hscore = np.load("results2/transfer2/v2_di_hscores_full.npy")
+# scores = np.load("results2/transfer2/v2_di_bac_full.npy")
+# transrates = np.load("results2/transfer2/v2_di_transrates_full.npy")
+# hscore = np.load("results2/transfer2/v2_di_hscores_full.npy")
 
 # old_transrates = np.load("results/transfer/di_transrates_full_wo_imgnet.npy")
 
 # transrates[14] = old_transrates[14]
 # np.save("results/transfer/v3_di_transrates_full_wo_imgnet", transrates)
 # exit()
-
 print(scores.shape)
 print(transrates.shape)
 print(hscore.shape)
@@ -41,19 +39,6 @@ print(hscore.shape)
 # scores = scores[del_datasets]
 # transrates = transrates[del_datasets]
 # hscore = hscore[del_datasets]
-
-# """
-# Add GPT
-# """
-# best
-# gpt_scores = np.load("results/transfer/di_bac_synth15260True_imgnet.npy")
-# gpt_transrates = np.load("results/transfer/di_transrates_synth15260True_imgnet.npy")
-# worse
-# gpt_scores = np.load("results/transfer/di_bac_synth1960True_imgnet.npy")
-# gpt_transrates = np.load("results/transfer/di_transrates_synth1960True_imgnet.npy")
-
-# scores = np.concatenate((scores, gpt_scores), axis=2)
-# transrates = np.concatenate((transrates, gpt_transrates), axis=2)
 
 print(scores.shape)
 print(transrates.shape)
@@ -145,23 +130,26 @@ plt.savefig("figures2/complexity2/v2_f_regression.png")
 plt.savefig("figures2/complexity2/v2_f_regression.eps")
 # plt.savefig("figures2/complexity2/v2_f_regression_wo_imgnet.png")
 # plt.savefig("figures2/complexity2/v2_f_regression_wo_imgnet.eps")
-matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
+matplotlib.rcParams.update({'font.size': 20, "font.family" : "monospace"})
 
-# exit()
-
-# <eamcomplexity taking into account selected metrics
+# Complexity taking into account selected metrics
 # mean_complexity = np.mean(complexity[:, kbest_argmax[-1:]], axis=1)
 # mean_complexity = np.mean(complexity[:, kbest_argmax[:1]], axis=1)
 mean_complexity = complexity[:, kbest_argmax][:, 0]
 # mean_complexity = np.mean(complexity[:, kbest_argmax][:, [0, 1, 2, 3]], axis=1)
 
-fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+
+matplotlib.rcParams.update({'font.size': 26, "font.family" : "monospace"})
+fig, ax = plt.subplots(1, 1, figsize=(18, 9))
 cmap = matplotlib.colormaps['tab20c']
 colors = [cmap(i) for i in np.linspace(0, 1, len(dataset_names)+1)]
 
 for data_id in range(len(dataset_names)):
-    ax.scatter(mean_plot_scores[data_id+1], mean_complexity[data_id], color=colors[data_id+1], s=80)
-    ax.text(mean_plot_scores[data_id+1]-.003, mean_complexity[data_id]+.005, s=dataset_names[data_id], fontsize=12)
+    if dataset_names[data_id] == "wisconsin":
+        ax.scatter(mean_plot_scores[data_id+1], mean_complexity[data_id], color="white", s=900, edgecolors= "black", label=dataset_names[data_id])
+    else:
+        ax.scatter(mean_plot_scores[data_id+1], mean_complexity[data_id], color=colors[data_id+1], s=900, edgecolors= "black", label=dataset_names[data_id])
+    # ax.text(mean_plot_scores[data_id+1], mean_complexity[data_id], s=dataset_names[data_id][:2], fontsize=12)
     # ax.text(mean_plot_scores[data_id+1]-.001, mean_complexity[data_id]+.005, s=dataset_names[data_id], fontsize=10, rotation=-45)
 
 ax.spines[['right', 'top']].set_visible(False)
@@ -173,130 +161,164 @@ print("x range:", mean_plot_scores.min(), mean_plot_scores.max())
 print("y range:", mean_complexity.min(), mean_complexity.max())
 
 # wo
-# ax.set_title("ResNet-18 trained from scratch \n Pearson correlation coefficient: %.3f, p-value: %.3f" % (pearsonr(mean_complexity, mean_plot_scores[1:])[0], pearsonr(mean_complexity, mean_plot_scores[1:])[1]))
-# ax.set_xlim((.66, 0.7))
-# ax.set_ylim((.6, 1.05))
-# ax.set_ylabel("Density")
+ax.set_title("Raw ResNet-18 \n Pearson correlation coefficient: %.3f, p-value: %.3f" % (pearsonr(mean_complexity, mean_plot_scores[1:])[0], pearsonr(mean_complexity, mean_plot_scores[1:])[1]))
+ax.set_xlim((.66, 0.695))
+ax.set_ylim((.59, 1.02))
+ax.set_ylabel("Density")
 
 # imgnet
-ax.set_title("Fine-tuned ResNet-18 pre-trained on ImageNet \n Pearson correlation coefficient: %.3f, p-value: %.3f "% (pearsonr(mean_complexity, mean_plot_scores[1:])[0], pearsonr(mean_complexity, mean_plot_scores[1:])[1]))
-ax.set_ylabel("L2")
-ax.set_xlim((.74, 0.8))
-ax.set_ylim((0.0, .35))
+# ax.set_title("ResNet-18 pre-trained on ImageNet \n Pearson correlation coefficient: %.3f, p-value: %.3f "% (pearsonr(mean_complexity, mean_plot_scores[1:])[0], pearsonr(mean_complexity, mean_plot_scores[1:])[1]))
+# ax.set_ylabel("L2")
+# ax.set_xlim((.74, 0.79))
+# ax.set_ylim((-0.01, .35))
 
+# IMG legend
+# ax.legend(frameon=True, fontsize=15.5, ncols=3, loc='best', bbox_to_anchor=(0.58, 0.5))
+# legend = ax.legend(frameon=True, fontsize=11, ncols=6)
+# def export_legend(legend, filename="legend.eps", expand=[-5,-5,5,5]):
+#     fig  = legend.figure
+#     fig.canvas.draw()
+#     bbox  = legend.get_window_extent()
+#     bbox = bbox.from_extents(*(bbox.extents + np.array(expand)))
+#     bbox = bbox.transformed(fig.dpi_scale_trans.inverted())
+#     fig.savefig(filename, dpi="figure", bbox_inches=bbox)
+# export_legend(legend)
+
+# WO IMGNET legend
+# ax.legend(frameon=True, fontsize=15.5, ncols=3, loc='best')
 plt.tight_layout()
 # wo
-# plt.savefig("figures2/v2_all_bac_complexity_wo_imgnet.png", dpi=200)
-# plt.savefig("figures2/v2_all_bac_complexity_wo_imgnet.eps")
+plt.savefig("figures2/v3_all_bac_complexity_wo_imgnet.png", dpi=200)
+plt.savefig("figures2/v3_all_bac_complexity_wo_imgnet.eps")
 # imgnet
-plt.savefig("figures2/v2_all_bac_complexity.png", dpi=200)
-plt.savefig("figures2/v2_all_bac_complexity.eps")
-plt.close()
+# plt.savefig("figures2/v3_all_bac_complexity.png", dpi=200)
+# plt.savefig("figures2/v3_all_bac_complexity.eps")
+# plt.close()
 print(f_regression(mean_complexity.reshape(-1, 1), mean_plot_scores[1:]))
 print(pearsonr(mean_complexity, mean_plot_scores[1:]))
 
-exit()
+# exit()
 
 
 
 
-fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+matplotlib.rcParams.update({'font.size': 26, "font.family" : "monospace"})
+fig, ax = plt.subplots(1, 1, figsize=(18, 9))
 cmap = matplotlib.colormaps['tab20c']
 colors = [cmap(i) for i in np.linspace(0, 1, len(transfer_names))]
 
 for transfer_id in range(len(transfer_names)):
-    ax.scatter(mean_plot_scores[transfer_id], mean_plot_hscore[transfer_id], color=colors[transfer_id], s=80)
+    print(transfer_names[transfer_id])
+    if transfer_names[transfer_id] == "wisconsin":
+        ax.scatter(mean_plot_scores[transfer_id], mean_plot_hscore[transfer_id], color="white", s=400, edgecolors= "black", label=transfer_names[transfer_id])
+    else:
+        ax.scatter(mean_plot_scores[transfer_id], mean_plot_hscore[transfer_id], color=colors[transfer_id], s=400, edgecolors= "black", label=transfer_names[transfer_id])
     # ax.text(mean_plot_scores[transfer_id]+.0003, mean_plot_hscore[transfer_id]-.005, s=transfer_names[transfer_id], fontsize=10, rotation=-45)
     # wo
     # if transfer_names[transfer_id] == "imagenet":
     #     transfer_names[transfer_id] = "random"
     # ax.text(mean_plot_scores[transfer_id]-.001, mean_plot_hscore[transfer_id]+.0015, s=transfer_names[transfer_id], fontsize=12, rotation=0)
     # imgnet
-    ax.text(mean_plot_scores[transfer_id]+0.001, mean_plot_hscore[transfer_id], s=transfer_names[transfer_id], fontsize=12, rotation=90)
+    # ax.text(mean_plot_scores[transfer_id]+0.001, mean_plot_hscore[transfer_id], s=transfer_names[transfer_id], fontsize=12, rotation=90)
 
 # ax.scatter(np.mean(gpt_scores, axis=(0, 1)), np.mean(gpt_transrates, axis=(0, 1)), color="tomato", s=80)
 
 # ax.set_title("Mean plot over all transfer datasets")
-# ax.set_title("ResNet-18 trained from scratch \n Pearson correlation coefficient: %.3f, p-value: %.3f" % (pearsonr(mean_plot_hscore[1:], mean_plot_scores[1:])[0], pearsonr(mean_plot_hscore[1:], mean_plot_scores[1:])[1]))
-ax.set_title("Fine-tuned ResNet-18 pre-trained on ImageNet \n Pearson correlation coefficient: %.3f, p-value: %.3f "% (pearsonr(mean_plot_hscore[1:], mean_plot_scores[1:])[0], pearsonr(mean_plot_hscore[1:], mean_plot_scores[1:])[1]))
+ax.set_title("Raw ResNet-18 \n Pearson correlation coefficient: %.3f, p-value: %.3f" % (pearsonr(mean_plot_hscore[1:], mean_plot_scores[1:])[0], pearsonr(mean_plot_hscore[1:], mean_plot_scores[1:])[1]))
+# ax.set_title("ResNet-18 pre-trained on ImageNet \n Pearson correlation coefficient: %.3f, p-value: %.3f "% (pearsonr(mean_plot_hscore[1:], mean_plot_scores[1:])[0], pearsonr(mean_plot_hscore[1:], mean_plot_scores[1:])[1]))
 ax.set_xlabel("Mean Balanced accuracy")
 ax.set_ylabel("Mean H-score")
 ax.spines[['right', 'top']].set_visible(False)
 # wo
-# ax.set_xlim((.66, 0.7))
-# ax.set_ylim((.87, 0.92))
+ax.set_xlim((.66, 0.695))
+ax.set_ylim((.869, 0.92))
 # imgnet
-ax.set_xlim((.74, 0.8))
-ax.set_ylim((.89, .94))
+# ax.set_xlim((.74, 0.79))
+# ax.set_ylim((.888, .94))
 ax.grid(ls=":", c=(.7, .7, .7))
+# ax.legend(frameon=True, fontsize=15.5, ncols=3, loc='upper left')
 # plt.legend(frameon=True, fontsize=12, ncols=2)
 
-print("x range:", mean_plot_scores.min(), mean_plot_scores.max())
-print("y range:", mean_plot_hscore.min(), mean_plot_hscore.max())
+# IMG legend
+# ax.legend(frameon=True, fontsize=15.5, ncols=3, loc='best', bbox_to_anchor=(0.58, 0.5))
+# legend = ax.legend(frameon=True, fontsize=11, ncols=6)
+# def export_legend(legend, filename="legend2.eps", expand=[-5,-5,5,5]):
+#     fig  = legend.figure
+#     fig.canvas.draw()
+#     bbox  = legend.get_window_extent()
+#     bbox = bbox.from_extents(*(bbox.extents + np.array(expand)))
+#     bbox = bbox.transformed(fig.dpi_scale_trans.inverted())
+#     fig.savefig(filename, dpi="figure", bbox_inches=bbox)
+# export_legend(legend)
+
+# print("x range:", mean_plot_scores.min(), mean_plot_scores.max())
+# print("y range:", mean_plot_hscore.min(), mean_plot_hscore.max())
 
 
 
 plt.tight_layout()
 # wo
-# plt.savefig("figures2/transfer2/v2_all_hscore_wo_imgnet.png", dpi=200)
-# plt.savefig("figures2/transfer2/v2_all_hscore_wo_imgnet.eps")
+plt.savefig("figures2/transfer2/v3_all_hscore_wo_imgnet.png", dpi=200)
+plt.savefig("figures2/transfer2/v3_all_hscore_wo_imgnet.eps")
 # imgnet
-plt.savefig("figures2/transfer2/v2_all_hscore.png", dpi=200)
-plt.savefig("figures2/transfer2/v2_all_hscore.eps")
+# plt.savefig("figures2/transfer2/v3_all_hscore.png", dpi=200)
+# plt.savefig("figures2/transfer2/v3_all_hscore.eps")
 
-plt.show()
-plt.close()
+# plt.show()
+# plt.close()
 
 
 print(f_regression(mean_plot_hscore[1:].reshape(-1, 1), mean_plot_scores[1:]))
 print(pearsonr(mean_plot_hscore[1:], mean_plot_scores[1:]))
-exit()
+# exit()
 
 
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+matplotlib.rcParams.update({'font.size': 26, "font.family" : "monospace"})
+fig, ax = plt.subplots(1, 1, figsize=(18, 9))
 cmap = matplotlib.colormaps['tab20c']
 colors = [cmap(i) for i in np.linspace(0, 1, len(transfer_names))]
 
 for transfer_id in range(len(transfer_names)):
-    ax.scatter(mean_plot_scores[transfer_id], mean_plot_transrates[transfer_id], color=colors[transfer_id], s=80)
+    if transfer_names[transfer_id] == "wisconsin":
+        ax.scatter(mean_plot_scores[transfer_id], mean_plot_transrates[transfer_id], color="white", s=900, edgecolors= "black", label=transfer_names[transfer_id])
+    else:
+        ax.scatter(mean_plot_scores[transfer_id], mean_plot_transrates[transfer_id], color=colors[transfer_id], s=900, edgecolors= "black", label=transfer_names[transfer_id])
     # ax.text(mean_plot_scores[transfer_id]+.0003, mean_plot_transrates[transfer_id]-.005, s=transfer_names[transfer_id], fontsize=10, rotation=-45)
     # wo
     # if transfer_names[transfer_id] == "imagenet":
     #     transfer_names[transfer_id] = "random"
     # ax.text(mean_plot_scores[transfer_id]-.001, mean_plot_transrates[transfer_id]+.0015, s=transfer_names[transfer_id], fontsize=12, rotation=0)
     # imgnet
-    ax.text(mean_plot_scores[transfer_id]-.001, mean_plot_transrates[transfer_id]+.006, s=transfer_names[transfer_id], fontsize=12, rotation=90)
+    # ax.text(mean_plot_scores[transfer_id]-.001, mean_plot_transrates[transfer_id]+.006, s=transfer_names[transfer_id], fontsize=12, rotation=90)
 
 # ax.scatter(np.mean(gpt_scores, axis=(0, 1)), np.mean(gpt_transrates, axis=(0, 1)), color="tomato", s=80)
 
 # ax.set_title("Mean plot over all transfer datasets")
-ax.set_title("ResNet-18 trained from scratch \n Pearson correlation coefficient: %.3f, p-value: %.3f" % (pearsonr(mean_plot_transrates[1:], mean_plot_scores[1:])[0], pearsonr(mean_plot_transrates[1:], mean_plot_scores[1:])[1]))
-# ax.set_title("Fine-tuned ResNet-18 pre-trained on ImageNet \n Pearson correlation coefficient: %.3f, p-value: %.3f "% (pearsonr(mean_plot_transrates[1:], mean_plot_scores[1:])[0], pearsonr(mean_plot_transrates[1:], mean_plot_scores[1:])[1]))
+ax.set_title("Raw ResNet-18 \n Pearson correlation coefficient: %.3f, p-value: %.3f" % (pearsonr(mean_plot_transrates[1:], mean_plot_scores[1:])[0], pearsonr(mean_plot_transrates[1:], mean_plot_scores[1:])[1]))
+# ax.set_title("ResNet-18 pre-trained on ImageNet \n Pearson correlation coefficient: %.3f, p-value: %.3f "% (pearsonr(mean_plot_transrates[1:], mean_plot_scores[1:])[0], pearsonr(mean_plot_transrates[1:], mean_plot_scores[1:])[1]))
 ax.set_xlabel("Mean Balanced accuracy")
 ax.set_ylabel("Mean TransRate")
 ax.spines[['right', 'top']].set_visible(False)
 # wo
-ax.set_xlim((.66, 0.7))
-ax.set_ylim((-.065, .08))
+ax.set_xlim((.66, 0.695))
+ax.set_ylim((-.042, .06))
 # imgnet
-# ax.set_xlim((.74, 0.8))
-# ax.set_ylim((-.20, .05))
+# ax.set_xlim((.74, 0.79))
+# ax.set_ylim((-.21, .05))
 ax.grid(ls=":", c=(.7, .7, .7))
-# plt.legend(frameon=True, fontsize=12, ncols=2)
-
+# ax.legend(frameon=True, fontsize=15.5, ncols=6, loc='upper center')
 plt.tight_layout()
 # wo
-plt.savefig("figures2/transfer2/v2_all_transrate_wo_imgnet.png", dpi=200)
-plt.savefig("figures2/transfer2/v2_all_transrate_wo_imgnet.eps")
+plt.savefig("figures2/transfer2/v3_all_transrate_wo_imgnet.png", dpi=200)
+plt.savefig("figures2/transfer2/v3_all_transrate_wo_imgnet.eps")
 # imgnet
-# plt.savefig("figures2/transfer2/v2_all_transrate.png", dpi=200)
-# plt.savefig("figures2/transfer2/v2_all_transrate.eps")
+# plt.savefig("figures2/transfer2/v3_all_transrate.png", dpi=200)
+# plt.savefig("figures2/transfer2/v3_all_transrate.eps")
 
 plt.close()
 print(f_regression(mean_plot_transrates[1:].reshape(-1, 1), mean_plot_scores[1:]))
 print(pearsonr(mean_plot_transrates[1:], mean_plot_scores[1:]))
-
+exit()
 
 
 

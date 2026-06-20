@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
 
-matplotlib.rcParams.update({'font.size': 14, "font.family" : "monospace"})
+matplotlib.rcParams.update({'font.size': 17, "font.family" : "monospace"})
 
 RUNTIME_CSV = "results_runtime/runtime_summary_per_fold_5.csv"
 OUT_DIR = "figures_runtime_with_extraction"
@@ -56,7 +56,7 @@ tr_rnd_total = encoding_mean + feat_rnd_mean + tr_rnd_mean
 
 # 1
 labels = [
-    "Complexity\n(22)",
+    "Complexity\nAll 22 measures",
     "H-score",
     "TransRate",
     "L2",
@@ -70,33 +70,37 @@ encoding_part = np.array([0.0, encoding_mean, encoding_mean, 0.0, 0.0,])
 feature_part = np.array([0.0, feat_img_mean, feat_img_mean, 0.0, 0.0,])
 metric_part = np.array([complexity_mean, hs_img_mean, tr_img_mean, l2_mean, density_mean,])
 totals = encoding_part + feature_part + metric_part
-fig, ax = plt.subplots(figsize=(12,7))
 
-ax.bar(x, encoding_part, width=w, color="#4C78A8", label="Encoding")
+fig, ax = plt.subplots(figsize=(14,5))
+ax.set_ylim(0.00, 3.0)
+ax.bar(x, encoding_part, width=w, color="#4C78A8", label="DeepInsight")
 ax.bar(x, feature_part, width=w, bottom=encoding_part, color="#72B7B2", label="Feature extraction")
-ax.bar(x, metric_part, width=w, bottom=encoding_part + feature_part, color="#F58518", label="Data transferability measures")
+ax.bar(x, metric_part, width=w, bottom=encoding_part + feature_part, color="#F58518", label="Complexity & Transerability")
 
 for i in range(len(x)):
     if encoding_part[i] > 0:
-        ax.text(x[i], encoding_part[i] / 2, f"{encoding_part[i]:.3f}", ha="center", va="center", color="white", fontsize=9, fontweight="bold")
+        ax.text(x[i], encoding_part[i] / 2, f"{encoding_part[i]:.3f}", ha="center", va="center", color="white", fontsize=19, fontweight="bold")
 
     if feature_part[i] > 0:
-        ax.text(x[i], encoding_part[i] + feature_part[i] / 2, f"{feature_part[i]:.3f}", ha="center", va="center", color="black", fontsize=9)
-
-    ax.text(x[i], encoding_part[i] + feature_part[i] + metric_part[i] / 2, f"{metric_part[i]:.3f}", ha="center", va="center", color="black", fontsize=9)
-    ax.text(x[i], totals[i] + max(totals) * 0.02, f"Σ={totals[i]:.3f}", ha="center", va="bottom", fontsize=10, fontweight="bold")
+        ax.text(x[i], encoding_part[i] + feature_part[i] / 2, f"{feature_part[i]:.3f}", ha="center", va="center", color="black", fontsize=19)
+    if i != 3:
+        ax.text(x[i], encoding_part[i] + feature_part[i] + metric_part[i] / 2 + .12, f"{metric_part[i]:.3f}", ha="center", va="center", color="black", fontsize=19)
+    else:
+        ax.text(x[i], encoding_part[i] + feature_part[i] + metric_part[i] / 2 + .07, f"{metric_part[i]:.3f}", ha="center", va="center", color="black", fontsize=19)
+    ax.text(x[i], totals[i] + max(totals) * 0.05 + .05, f"Σ={totals[i]:.3f}", ha="center", va="bottom", fontsize=19, fontweight="bold")
 
 ax.set_xticks(x, labels)
 ax.set_ylabel("Mean runtime [s]")
-ax.set_title("Runtime decomposition: encoding + extraction + metric")
+# ax.set_title("Runtime decomposition")
 ax.grid(ls=":", c=(.7, .7, .7), axis="y")
 ax.spines[['right', 'top']].set_visible(False)
-ax.legend(frameon=True)
+ax.legend(frameon=True, ncol=1)
 
 plt.tight_layout()
 plt.savefig(f"{OUT_DIR}/runtime_stacked_full_pipeline_custom.png", dpi=220)
 plt.savefig(f"{OUT_DIR}/runtime_stacked_full_pipeline_custom.eps")
 plt.close()
+exit()
 
 
 # 2
