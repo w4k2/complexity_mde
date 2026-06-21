@@ -16,13 +16,13 @@ transfer_names = ["imagenet"] + ['australian', 'banknote', 'breastcancoimbra', '
 
 ##
 # DATASET x FOLDS x TRANSFER
-scores = np.load("results2/transfer2/v2_di_bac_full_wo_imgnet.npy")
-transrates = np.load("results2/transfer2/v2_di_transrates_full_wo_imgnet.npy")
-hscore = np.load("results2/transfer2/v2_di_hscores_full_wo_imgnet.npy")
+# scores = np.load("results2/transfer2/v2_di_bac_full_wo_imgnet.npy")
+# transrates = np.load("results2/transfer2/v2_di_transrates_full_wo_imgnet.npy")
+# hscore = np.load("results2/transfer2/v2_di_hscores_full_wo_imgnet.npy")
 
-# scores = np.load("results2/transfer2/v2_di_bac_full.npy")
-# transrates = np.load("results2/transfer2/v2_di_transrates_full.npy")
-# hscore = np.load("results2/transfer2/v2_di_hscores_full.npy")
+scores = np.load("results2/transfer2/v2_di_bac_full.npy")
+transrates = np.load("results2/transfer2/v2_di_transrates_full.npy")
+hscore = np.load("results2/transfer2/v2_di_hscores_full.npy")
 
 # old_transrates = np.load("results/transfer/di_transrates_full_wo_imgnet.npy")
 
@@ -111,27 +111,30 @@ Plot f_regression
 """
 
 matplotlib.rcParams.update({'font.size': 20, "font.family" : "monospace"})
-fig, ax = plt.subplots(1, 1, figsize=(8, 12))
+fig, ax = plt.subplots(1, 1, figsize=(18, 5))
 
 cmap = matplotlib.colormaps['tab20b']
-colors = np.array([cmap(i) for i in np.linspace(0, 1, len(metrics))])[np.flip(kbest_argmax)]
+colors = np.array([cmap(i) for i in np.linspace(0, 1, len(metrics))])[kbest_argmax]
 
-ax.barh(np.array(metrics)[np.flip(kbest_argmax)], kbest_scores[np.flip(kbest_argmax)], color=colors)
+# ax.barh(np.array(metrics)[np.flip(kbest_argmax)], kbest_scores[np.flip(kbest_argmax)], color=colors)
+
+ax.bar(np.array(metrics)[kbest_argmax], kbest_scores[kbest_argmax], color=colors, edgecolor="black")
 
 ax.grid(ls=":", c=(.7, .7, .7))
-# ax.set_title("ResNet-18 trained from scratch")
-ax.set_title("Pre-trained on ImageNet", fontsize=24)
+# ax.set_title("Raw ResNet-18")
+ax.set_title("ResNet-18 pre-trained on ImageNet", fontsize=24)
 ax.spines[['right', 'top']].set_visible(False)
-ax.set_xlabel("F-statistic value")
-ax.set_xscale('log')
-
+ax.set_ylabel("F-statistic value")
+ax.set_yscale('log')
+ax.tick_params("x", rotation=45)
 plt.tight_layout()
 plt.savefig("figures2/complexity2/v2_f_regression.png")
 plt.savefig("figures2/complexity2/v2_f_regression.eps")
 # plt.savefig("figures2/complexity2/v2_f_regression_wo_imgnet.png")
 # plt.savefig("figures2/complexity2/v2_f_regression_wo_imgnet.eps")
+# matplotlib.rcParams.update({'font.size': 16, "font.family" : "monospace"})
 matplotlib.rcParams.update({'font.size': 20, "font.family" : "monospace"})
-
+exit()
 # Complexity taking into account selected metrics
 # mean_complexity = np.mean(complexity[:, kbest_argmax[-1:]], axis=1)
 # mean_complexity = np.mean(complexity[:, kbest_argmax[:1]], axis=1)
@@ -175,7 +178,7 @@ ax.set_ylabel("Density")
 # IMG legend
 # ax.legend(frameon=True, fontsize=15.5, ncols=3, loc='best', bbox_to_anchor=(0.58, 0.5))
 # legend = ax.legend(frameon=True, fontsize=11, ncols=6)
-# def export_legend(legend, filename="legend.eps", expand=[-5,-5,5,5]):
+# def export_legend(legend, filename="figures2/legend.eps", expand=[-5,-5,5,5]):
 #     fig  = legend.figure
 #     fig.canvas.draw()
 #     bbox  = legend.get_window_extent()
@@ -242,7 +245,7 @@ ax.grid(ls=":", c=(.7, .7, .7))
 # IMG legend
 # ax.legend(frameon=True, fontsize=15.5, ncols=3, loc='best', bbox_to_anchor=(0.58, 0.5))
 # legend = ax.legend(frameon=True, fontsize=11, ncols=6)
-# def export_legend(legend, filename="legend2.eps", expand=[-5,-5,5,5]):
+# def export_legend(legend, filename="figures2/legend2.eps", expand=[-5,-5,5,5]):
 #     fig  = legend.figure
 #     fig.canvas.draw()
 #     bbox  = legend.get_window_extent()

@@ -15,19 +15,7 @@ dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'g
 
 complexity = np.load("results2/complexity_measures.npy")
 print(np.mean(complexity, axis=1))
-
-
-"""
-Get complexity dictionaries for generation using ChatGPT
-"""
-# best_data = ["heart", "breastcancoimbra", "liver"]
-# for data_id, data_name in enumerate(dataset_names):
-#     if data_name in best_data:
-#         dict = {}
-#         for metric_id, metric in enumerate(metrics):
-#             dict[metric] = complexity[data_id, metric_id]
-#         print(dict)
-        
+     
 """
 Complexity space PCA
 """
@@ -43,21 +31,6 @@ Complexity space PCA
 #     ax.scatter(complexity_space[data_id, 0], complexity_space[data_id, 1], color=colors[data_id+1])
 #     ax.text(complexity_space[data_id, 0]+.03, complexity_space[data_id, 1]-.02, s=dataset_names[data_id], fontsize=8)
 
-"""
-Add GPT data to plot
-"""
-# data = np.genfromtxt('gpt_data/gpt_dataset.csv', delimiter=',', skip_header=1)
-# X, y = data[:, :-1].astype(float), data[:, -1].astype(int)
-# cc = px.ComplexityCalculator()
-# cc.fit(X, y)
-# gpt_complexity = cc.complexity
-# gpt_complexity = pca.transform([gpt_complexity])
-# ax.scatter(gpt_complexity[0, 0], gpt_complexity[0, 1], color="tomato", s=10)
-
-# ax.grid(ls=":", c=(.7, .7, .7))
-# plt.tight_layout()
-# plt.savefig("figures/complexity/all_space.png")
-# exit()
 
 """
 Complexity signature

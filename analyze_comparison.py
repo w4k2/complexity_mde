@@ -8,10 +8,7 @@ from scipy.stats import rankdata, wilcoxon
 import matplotlib
 matplotlib.rcParams.update({'font.size': 12, "font.family" : "monospace"})
 
-# dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
-
-# 5, 6, 14, 19
-dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'sonar', 'spambase', 'titanic', 'twonorm']
+dataset_names = ['australian', 'banknote', 'breastcancoimbra', 'cryotherapy', 'german', 'haberman', 'heart', 'ionosphere', 'liver', 'mammographic', 'monk-2', 'monkone', 'phoneme', 'pima', 'ring', 'sonar', 'spambase', 'titanic', 'twonorm', 'wisconsin']
 
 # DATASETS x FOLDS x TRANSFER (imagenet | best BAC | best transrate) x EPOCH
 # to do after exp_comparison
@@ -27,10 +24,9 @@ scores_complexity = np.load("results/transfer/comparison_imgnet_finetuning_compl
 mean_scores = np.mean(scores, axis=1)
 mean_scores_complexity = np.mean(scores_complexity, axis=1)
 
-# remove dataset 5, 6, 14 and 19 (haberman, heart, ring, wisconsin)
+
 mean_scores = mean_scores[[0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18]]
 mean_scores_complexity = mean_scores_complexity[[0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18]]
-
 
 transfer_names = ["Imagenet", "Best BAC", "Best TransRate"]
 
@@ -63,27 +59,31 @@ fig, ax = plt.subplots(1, 1, figsize=(11, 3.5))
 
 for i, scores in enumerate(data_mean_scores):
     if i == 0:
-        ax.plot(gaussian_filter1d(scores, 1), label="Imagenet")
+        ax.plot(gaussian_filter1d(scores, 1), label="ImageNet only")
+        # ax.plot(gaussian_filter1d(scores, 1), label="Trained from scratch")
     else:
         ax.plot(gaussian_filter1d(scores, 1), label=transfer_names[i])
 ax.plot(gaussian_filter1d(data_mean_scores_complexity[0], 1), label="Highest complexity")
 
 ax.set_xticks(np.arange(0, 50, 2), [str(i+1) for i in np.arange(0, 50, 2)])
 ax.set_xlim(-.2, 49.2)
-ax.set_ylim(.55, 0.85)
+ax.set_ylim(.5, .85)
 ax.grid(ls=":", c=(.7, .7, .7))
 ax.spines[['right', 'top']].set_visible(False)
-ax.set_ylabel("Mean Balanced accuracy score \n over all datasets")
+ax.set_ylabel("Mean BAC over all datasets")
 ax.set_xlabel("Fine-tuning Epoch")
 # ax.set_title("Fine-tuning previously selected models (trained from scratch)")
-ax.set_title("Fine-tuning previously selected models (with fine-tuned ImageNet weights)")
+ax.set_title("Fine-tuning previously selected models (with pre-trained ImageNet weights)")
 
-plt.legend()
+plt.legend(frameon=True, ncol=4, loc="lower center")
 plt.tight_layout()
 plt.savefig("bar.png")
+# plt.savefig("figures/comparison_wo_imgnet.png")
 # plt.savefig("figures/comparison_wo_imgnet.eps")
+plt.savefig("figures/comparison_imgnet.png")
 plt.savefig("figures/comparison_imgnet.eps")
 plt.close()
+exit()
 
 # Table
 def cv52cft(a, b):
@@ -114,94 +114,77 @@ def t_test_corrected(a, b, J=2, k=5):
 
 
 transfer_names = ["Imagenet", "Best BAC", "Best TransRate", "Highest complexity"]
-all_wilcoxon = []
-for epoch in range(10):
-    # DATA x FOLDS x MODEL (choose epoch)
-    scores = np.load("results/transfer/comparison_imgnet_finetuning.npy")
-    scores_complexity = np.load("results/transfer/comparison_imgnet_finetuning_complexity.npy")
+
+scores = np.load("results/transfer/comparison_imgnet_finetuning.npy")
+scores_complexity = np.load("results/transfer/comparison_imgnet_finetuning_complexity.npy")
+
+# scores = np.load("results/transfer/comparison_wo_imgnet_finetuning.npy")
+# scores_complexity = np.load("results/transfer/comparison_wo_imgnet_finetuning_complexity.npy")
+
+
+# DATA x FOLDS x MODEL x EPOCHS
+total_scores = np.concatenate((scores, scores_complexity), axis=2)
+
+
+total_scores = total_scores[[0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18]]
+
+# not all datasets
+# total_scores = total_scores[:14]
+# dataset_names = dataset_names[:14]
+
+# DATA x FOLDS x MODEL (choose epoch)
+total_scores = total_scores[:, :, :, 4]
+# DATA x MODEL
+mean_total_scores = np.mean(total_scores, axis=1)
+
+print(np.mean(mean_total_scores, axis=0))
+
+t = []
+alpha = .05
+for data_id, data in enumerate(dataset_names):
+    t.append(["%s" % data] + ["%.3f" % v for v in mean_total_scores[data_id]])
+    # FOLDS x MODEL (choose epoch)
+    data_total_scores = total_scores[data_id]
     
-    # scores = np.load("results/transfer/comparison_wo_imgnet_finetuning.npy")
-    # scores_complexity = np.load("results/transfer/comparison_wo_imgnet_finetuning_complexity.npy")
-
-    # for i, data in  enumerate(scores):
-    #     if np.mean(data[:, 2]) == 0:
-    #         data[:, 2] = data[:, 1]
-    # exit()
-
-    # DATA x FOLDS x MODEL x EPOCHS
-    total_scores = np.concatenate((scores, scores_complexity), axis=2)
-
-    # remove the 5th, 6th and 19th dataset
-    total_scores = total_scores[[0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18], :, :, :]
-
-    # not all datasets
-    # total_scores = total_scores[:14]
-    # dataset_names = dataset_names[:14]
-
+    T, p = np.array(
+                [[t_test_corrected(data_total_scores[:, i],
+                        data_total_scores[:, j]) if i != j else (0.0, 1.0)
+                    for i in range(len(transfer_names))]
+                    for j in range(len(transfer_names))]
+            ).swapaxes(0, 2)
+    mean_adv = mean_total_scores[data_id] < mean_total_scores[data_id, :, np.newaxis]
+    stat_adv = p < alpha
     
-
-    total_scores = total_scores[:, :, :, epoch]
-    # DATA x MODEL
-    mean_total_scores = np.mean(total_scores, axis=1)
-    # print(data_mean_scores)
-
-    # print(np.mean(mean_total_scores, axis=0))
-
-    t = []
-    alpha = .05
-    for data_id, data in enumerate(dataset_names):
-        t.append(["%s" % data] + ["%.3f" % v for v in mean_total_scores[data_id]])
-        # FOLDS x MODEL (choose epoch)
-        data_total_scores = total_scores[data_id]
-        
-        T, p = np.array(
-                    [[t_test_corrected(data_total_scores[:, i],
-                            data_total_scores[:, j]) if i != j else (0.0, 1.0)
-                        for i in range(len(transfer_names))]
-                        for j in range(len(transfer_names))]
-                ).swapaxes(0, 2)
-        mean_adv = mean_total_scores[data_id] < mean_total_scores[data_id, :, np.newaxis]
-        stat_adv = p < alpha
-        
-        _ = np.where(stat_adv * mean_adv)
-        conclusions = [list(1 + _[1][_[0] == i]) for i in range(len(transfer_names))]
-        
-        t.append([''] + [", ".join(["%i" % i for i in c])
-            if len(c) > 0 and len(c) < len(transfer_names)-1 else ("all" if len(c) == len(transfer_names)-1 else "---")
-            for c in conclusions])
-        
-        
-    # print(tabulate(t, headers=transfer_names, floatfmt="%.3f", tablefmt="latex_booktabs"))
-
-    # Wilcoxon
-    # DATASETS x ENCODINGS
-    ranks = rankdata(mean_total_scores, axis=1)
-    # print(np.mean(mean_total_scores, axis=0))
-    mean_ranks = np.mean(ranks, axis=0)
-
-    w = []
-    s = np.zeros((4, 4))
-    p = np.zeros((4, 4))
-
-    for i in range(4):
-                    for j in range(4):
-                        s[i, j], p[i, j] = wilcoxon(mean_total_scores.T[i], mean_total_scores.T[j], zero_method="zsplit", alternative="greater")
-                        
-    _ = np.where((p < alpha) * (s > 0))
-    conclusions = [list(1 + _[1][_[0] == i]) for i in range(4)]
-    w.append([" "] + ["%.3f" % v for v in mean_ranks])
-
-    w.append([''] + [", ".join(["%i" % i for i in c])
-                                if len(c) > 0 and len(c) < 4-1 else ("all" if len(c) == 4-1 else "---")
-                                for c in conclusions])
-
-    tab_w = tabulate(w, headers=transfer_names, tablefmt="latex_booktabs")
-    # print(tab_w)
+    _ = np.where(stat_adv * mean_adv)
+    conclusions = [list(1 + _[1][_[0] == i]) for i in range(len(transfer_names))]
+    
+    t.append([''] + [", ".join(["%i" % i for i in c])
+        if len(c) > 0 and len(c) < len(transfer_names)-1 else ("all" if len(c) == len(transfer_names)-1 else "---")
+        for c in conclusions])
     
     
-    all_wilcoxon.append(["%i" % (epoch+1)] + ["%.3f" % v for v in mean_ranks])
-    all_wilcoxon.append([''] + [", ".join(["%i" % i for i in c])
-                                if len(c) > 0 and len(c) < 4-1 else ("all" if len(c) == 4-1 else "---")
-                                for c in conclusions])
-print(tabulate(all_wilcoxon, headers=["Epoch"] + transfer_names, tablefmt="latex_booktabs"))
-    
+print(tabulate(t, headers=transfer_names, floatfmt="%.3f", tablefmt="latex_booktabs"))
+
+# Wilcoxon
+# DATASETS x ENCODINGS
+ranks = rankdata(mean_total_scores, axis=1)
+mean_ranks = np.mean(ranks, axis=0)
+
+w = []
+s = np.zeros((4, 4))
+p = np.zeros((4, 4))
+
+for i in range(4):
+                for j in range(4):
+                    s[i, j], p[i, j] = wilcoxon(mean_total_scores.T[i], mean_total_scores.T[j], zero_method="zsplit", alternative="greater")
+                    
+_ = np.where((p < alpha) * (s > 0))
+conclusions = [list(1 + _[1][_[0] == i]) for i in range(4)]
+w.append([" "] + ["%.3f" % v for v in mean_ranks])
+
+w.append([''] + [", ".join(["%i" % i for i in c])
+                             if len(c) > 0 and len(c) < 4-1 else ("all" if len(c) == 4-1 else "---")
+                             for c in conclusions])
+
+tab_w = tabulate(w, headers=transfer_names, tablefmt="latex_booktabs")
+print(tab_w)
