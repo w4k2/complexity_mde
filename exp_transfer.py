@@ -144,6 +144,3 @@ for data_id, dataset_name in enumerate(tqdm(datasets)):
             # np.save("results/transfer/v2_di_bac_full_wo_imgnet", scores)
             # np.save("results/transfer/v2_di_hscores_full_wo_imgnet", hscores)
             # np.save("results/transfer/v2_di_transrates_full_wo_imgnet", transrates)
-
-
-            # rpa_7CN485Z84XO07ZGWHG70Z8MFYN58ZIG1MFNHXX1Wnqk9wa
